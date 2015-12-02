@@ -6,25 +6,19 @@ public class Timer {
 	long lastTime;
 	long nextTime;
 	long frameTime;
-	long perfCountFrequency;
 
 	double timeElapsed;
-	double timeScale;
 
 	float fps;
 
-	public Timer() {
-		this(0);
-	}
-
 	public Timer(float fps) {
+		if(fps == 0) {
+			throw new IllegalArgumentException("FPS of 0 is not allowed");
+		}
 		timeElapsed = 0;
-		frameTime = 0;
 		lastTime = 0;
-		perfCountFrequency = System.nanoTime();
 		this.fps = fps;
 
-		timeScale = 1.0f / 1_000_000_000;
 		frameTime = (long) ((1 / fps) * 1_000_000_000);
 	}
 
@@ -35,11 +29,6 @@ public class Timer {
 	}
 
 	public boolean readyForNextFrame() {
-		if (fps == 0) {
-			System.out.println("No FPS set in timer");
-			return false;
-		}
-
 		currentTime = System.nanoTime();
 
 		if (currentTime > nextTime) {

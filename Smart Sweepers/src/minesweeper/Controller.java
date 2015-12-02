@@ -153,6 +153,9 @@ public class Controller {
 			avgFitness.add(genericAlg.getAverageFitness());
 			bestFitness.add(genericAlg.getBestFitness());
 
+			removeValues(avgFitness, 100);
+			removeValues(bestFitness, 100);
+			
 			++generations;
 			ticks = 0;
 
@@ -166,6 +169,12 @@ public class Controller {
 		return true;
 	}
 
+	private void removeValues(List<?> list, int maxEntries) {
+		while(list.size() > maxEntries){
+			list.remove(0);
+		}
+	}
+	
 	public void render(Graphics2D g2) {
 		String s = "Generation: " + generations;
 		g2.drawString(s, 5, 20);
@@ -258,13 +267,13 @@ public class Controller {
 	}
 
 	private void plotStats(Graphics2D g2) {
-		String s = "Best Fitness: " + genericAlg.getBestFitness();
+		String s = "Best Fitness: " + String.format("%.0f", genericAlg.getBestFitness());
 		g2.drawString(s, 5, 40);
 
-		s = "Average Fitness: " + genericAlg.getAverageFitness();
+		s = "Average Fitness: " + String.format("%.2f", genericAlg.getAverageFitness());
 		g2.drawString(s, 5, 60);
 
-		float hSlice = (float) (xClient / (generations + 1.0));
+		float hSlice = (float) (xClient / (bestFitness.size() + 1.0));
 		float vSlice = (float) (yClient / ((genericAlg.getBestFitness() + 1) * 2));
 
 		float x = 0;
