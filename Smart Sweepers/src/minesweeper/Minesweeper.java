@@ -24,6 +24,7 @@ public class Minesweeper {
 	private double scale;
 
 	int closestMine;
+	private int closestObstacle;
 
 	Random rand;
 
@@ -58,15 +59,20 @@ public class Minesweeper {
 		matTransform.transformSPoints(sweeper);
 	}
 
-	public boolean update(List<SVector2D> mines) {
+	public boolean update(List<SVector2D> mines, List<SVector2D> obstacles) {
 		List<Double> inputs = new ArrayList<>();
 
 		SVector2D closestMine = getClosestMine(mines);
+		SVector2D closestObstacle = getClosestObstacle(obstacles);
 
 		closestMine = closestMine.normalize();
+		closestObstacle = closestObstacle.normalize();
 
 		inputs.add(closestMine.getX());
 		inputs.add(closestMine.getY());
+		
+		inputs.add(closestObstacle.getX());
+		inputs.add(closestObstacle.getY());
 
 		inputs.add(lookAt.getX());
 		inputs.add(lookAt.getY());
@@ -121,7 +127,32 @@ public class Minesweeper {
 		}
 		return closestObect;
 	}
+	
+	private SVector2D getClosestObstacle(List<SVector2D> mines) {
+		double closestSoFar = Double.MAX_VALUE;
+		SVector2D closestObect = new SVector2D(0, 0);
 
+		for (int i = 0; i < mines.size(); i++) {
+			SVector2D currentMine = mines.get(i);
+			double lenToOjbect = currentMine.subN(position).length();
+
+			if (lenToOjbect < closestSoFar) {
+				closestSoFar = lenToOjbect;
+				closestObect = position.subN(currentMine);
+				closestObstacle = i;
+			}
+		}
+		return closestObect;
+	}
+	public int checkForObstacle(List<SVector2D> mines, double size) {
+		SVector2D distanceToObject = position.subN(mines.get(closestObstacle));
+		if (distanceToObject.length() < (size + 5)) {
+			return closestObstacle;
+		}
+
+		return -1;
+	}
+	
 	public int checkForMine(List<SVector2D> mines, double size) {
 		SVector2D distanceToObject = position.subN(mines.get(closestMine));
 		if (distanceToObject.length() < (size + 5)) {
@@ -130,13 +161,19 @@ public class Minesweeper {
 
 		return -1;
 	}
-
+	
 	public SVector2D getPosition() {
 		return position;
 	}
 
 	public void incrementFitness() {
 		++fitness;
+	}
+	
+	public void decrementFitness() {
+		if(fitness > 1) {
+			fitness -= 2;			
+		}
 	}
 
 	public double getFitness() {

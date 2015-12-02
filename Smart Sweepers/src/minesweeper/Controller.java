@@ -23,6 +23,7 @@ public class Controller {
 	List<Genome> thePopulation;
 	List<Minesweeper> sweepers;
 	List<SVector2D> mines;
+	List<SVector2D> obstacles;
 
 	GenericAlgorithm genericAlg;
 
@@ -91,6 +92,10 @@ public class Controller {
 		for (int i = 0; i < numMines; i++) {
 			mines.add(new SVector2D(rand.randomFloat() * xClient, rand.randomFloat() * yClient));
 		}
+		obstacles = new ArrayList<>();
+		for (int i = 0; i < numMines; i++) {
+			obstacles.add(new SVector2D(rand.randomFloat() * xClient, rand.randomFloat() * yClient));
+		}
 
 		bluePen = Color.BLUE;
 		redPen = Color.RED;
@@ -134,7 +139,7 @@ public class Controller {
 		if (ticks++ < Parameters.iNumTicks) {
 			for (int i = 0; i < numSweepers; i++) {
 				Minesweeper currentSweeper = sweepers.get(i);
-				if (!currentSweeper.update(mines)) {
+				if (!currentSweeper.update(mines, obstacles)) {
 					System.out.println("Wront amout of NN inputs!");
 					return false;
 				}
@@ -145,6 +150,13 @@ public class Controller {
 					currentSweeper.incrementFitness();
 
 					mines.set(grabHit, new SVector2D(rand.randomFloat() * xClient, rand.randomFloat() * yClient));
+				}
+				int grabTrap = currentSweeper.checkForObstacle(obstacles, Parameters.dMineScale);
+				
+				if (grabTrap >= 0) {
+					currentSweeper.decrementFitness();
+					
+					obstacles.set(grabTrap, new SVector2D(rand.randomFloat() * xClient, rand.randomFloat() * yClient));
 				}
 
 				thePopulation.get(i).setFitness(currentSweeper.getFitness());
@@ -191,6 +203,30 @@ public class Controller {
 				}
 
 				worldTransform(mineVBnew, mines.get(i));
+
+				for (int vert = 0; vert < mineVBnew.size() - 1; vert++) {
+					int currVert = vert;
+					SPoint firstPoint = mineVBnew.get(currVert++);
+					SPoint secondPoint = mineVBnew.get(currVert);
+					Shape line = new Line2D.Double(firstPoint.getX(), firstPoint.getY(), secondPoint.getX(), secondPoint.getY());
+					g2.draw(line);
+				}
+				SPoint firstPoint = mineVBnew.get(mineVBnew.size() - 1);
+				SPoint secondPoint = mineVBnew.get(0);
+				Shape line2 = new Line2D.Double(firstPoint.getX(), firstPoint.getY(), secondPoint.getX(), secondPoint.getY());
+				g2.draw(line2);
+			}
+			
+			g2.setColor(Color.GRAY);
+
+			for (int i = 0; i < numMines; i++) {
+
+				List<SPoint> mineVBnew = new ArrayList<SPoint>();
+				for (SPoint point : mineVB) {
+					mineVBnew.add(new SPoint(point.getX(), point.getY()));
+				}
+
+				worldTransform(mineVBnew, obstacles.get(i));
 
 				for (int vert = 0; vert < mineVBnew.size() - 1; vert++) {
 					int currVert = vert;
