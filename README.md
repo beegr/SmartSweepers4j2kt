@@ -5,5 +5,6 @@ It is a program to simulate the evolution of tanks which sweep mines. For this i
 The direction in which a tank is heading is processed using a neural network.
 
 With f you can toggle between visual mode and fast mode.
-
+![Image of Smartsweepers in visual mode](img/smartSweepersGui.png)
+![Image of Smartsweepers in statistics mode](img/smartSweepersFast.png)
 To alter the behavior and evolution you can change the settings in res/params.ini
