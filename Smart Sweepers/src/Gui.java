@@ -1,11 +1,12 @@
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import minesweeper.Controller;
 
-public class Gui extends JPanel {
+public class Gui extends JComponent {
 
 	private static final long serialVersionUID = 6233705413503026349L;
 	Controller controller;
