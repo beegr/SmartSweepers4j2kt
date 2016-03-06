@@ -23,8 +23,6 @@ public class GenericAlgorithm {
 
 	private Random rand;
 
-	private GenomeComparator comparator;
-
 	public GenericAlgorithm(int populationSize, double mutationRate, double crossoverRate, int numWeights) {
 		super();
 		this.populationSize = populationSize;
@@ -45,7 +43,6 @@ public class GenericAlgorithm {
 				genome.getWeights().add(rand.randomClamped());
 			}
 		}
-		comparator = new GenomeComparator();
 	}
 
 	public void mutate(List<Double> chromo) {
@@ -104,7 +101,7 @@ public class GenericAlgorithm {
 
 		reset();
 
-		population.sort(comparator);
+		population.sort((o1, o2) ->  (int) (o1.fitness - o2.fitness));
 
 		calculateBestWorstAvTot();
 
