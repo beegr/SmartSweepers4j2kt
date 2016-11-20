@@ -17,7 +17,6 @@ public class Genome {
 
 	public Genome() {
 		fitness = 0;
-
 		weights = new ArrayList<>();
 	}
 

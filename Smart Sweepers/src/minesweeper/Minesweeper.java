@@ -77,8 +77,9 @@ public class Minesweeper {
 		inputs.add(lookAt.getX());
 		inputs.add(lookAt.getY());
 
+		
 		List<Double> output = itsBrain.update(inputs);
-
+		
 		if (output.size() < Parameters.iNumOutputs) {
 			return false;
 		}

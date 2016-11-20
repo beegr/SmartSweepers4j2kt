@@ -15,13 +15,14 @@ public class Random {
 	public double randomFloat() {
 		return random.nextDouble();
 	}
+	
+	public double randomFloat(double lower, double upper) {
+		double range = upper - lower;
+		return lower + random.nextDouble() * range;
+	}
 
 	public boolean randomBoolean() {
-		if (randomInt(0, 1) > 0.5) {
-			return true;
-		} else {
-			return false;
-		}
+		return randomInt(0, 1) > 0.5;
 	}
 
 	public double randomClamped() {

@@ -44,14 +44,11 @@ public class NeuralNet {
 	public List<Double> getWeights() {
 		List<Double> weights = new ArrayList<>();
 
-		for (int numLayer = 0; numLayer < numHiddenLayers + 1; numLayer++) {
+		for (int numLayer = 0; numLayer < neuronLayers.size(); numLayer++) {
 			SNeuronLayer layer = neuronLayers.get(numLayer);
 			for (int numNeuron = 0; numNeuron < layer.numNeurons; numNeuron++) {
 				SNeuron neuron = layer.neurons.get(numNeuron);
-				for (int numWeight = 0; numWeight < neuron.numInputs; numWeight++) {
-					Double weight = neuron.inputWeight.get(numWeight);
-					weights.add(weight);
-				}
+				weights.addAll(neuron.inputWeight);
 			}
 		}
 		return weights;
@@ -60,7 +57,7 @@ public class NeuralNet {
 	public void putWeights(List<Double> weights) {
 		int cWeight = 0;
 
-		for (int numLayer = 0; numLayer < numHiddenLayers + 1; numLayer++) {
+		for (int numLayer = 0; numLayer < neuronLayers.size(); numLayer++) {
 			SNeuronLayer layer = neuronLayers.get(numLayer);
 			for (int numNeuron = 0; numNeuron < layer.numNeurons; numNeuron++) {
 				SNeuron neuron = layer.neurons.get(numNeuron);
@@ -74,13 +71,11 @@ public class NeuralNet {
 	public int getNumberOfWeights() {
 		int weights = 0;
 
-		for (int numLayer = 0; numLayer < numHiddenLayers + 1; numLayer++) {
+		for (int numLayer = 0; numLayer < neuronLayers.size(); numLayer++) {
 			SNeuronLayer layer = neuronLayers.get(numLayer);
 			for (int numNeuron = 0; numNeuron < layer.numNeurons; numNeuron++) {
 				SNeuron neuron = layer.neurons.get(numNeuron);
-				for (int numWeight = 0; numWeight < neuron.numInputs; numWeight++) {
-					weights++;
-				}
+				weights += neuron.numInputs;
 			}
 		}
 		return weights;
@@ -89,21 +84,17 @@ public class NeuralNet {
 	public List<Double> update(List<Double> inputs) {
 		List<Double> outputs = new ArrayList<>();
 
-		int cWeight = 0;
-
 		if (inputs.size() != numInputs) {
 			return outputs;
 		}
 
-		for (int numLayer = 0; numLayer < numHiddenLayers + 1; numLayer++) {
+		for (int numLayer = 0; numLayer < neuronLayers.size(); numLayer++) {
 			if (numLayer > 0) {
 				inputs.clear();
 				inputs.addAll(outputs);
-				// inputs = outputs;
 			}
 
 			outputs.clear();
-			cWeight = 0;
 
 			SNeuronLayer layer = neuronLayers.get(numLayer);
 			for (int numNeuron = 0; numNeuron < layer.numNeurons; numNeuron++) {
@@ -113,14 +104,13 @@ public class NeuralNet {
 				int numInputs = neuron.numInputs;
 
 				for (int numWeight = 0; numWeight < numInputs - 1; numWeight++) {
-					netInput += neuron.inputWeight.get(numWeight) * inputs.get(cWeight++);
+					netInput += neuron.inputWeight.get(numWeight) * inputs.get(numWeight++);
 				}
 
 				netInput += neuron.inputWeight.get(numInputs - 1) * Parameters.dBias;
 
 				outputs.add(sigmoid(netInput, Parameters.dActivationResponse));
 
-				cWeight = 0;
 			}
 		}
 

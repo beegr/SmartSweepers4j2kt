@@ -177,6 +177,7 @@ public class Controller {
 				sweepers.get(i).putWeights(thePopulation.get(i).getWeights());
 				sweepers.get(i).reset();
 			}
+			mainWindow.repaint();
 		}
 		return true;
 	}

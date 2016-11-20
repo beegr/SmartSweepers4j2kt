@@ -55,7 +55,7 @@ public class GenericAlgorithm {
 	}
 
 	public Genome getChromoRoulette() {
-		double slice = rand.randomFloat() * totalFitness;
+		double slice = rand.randomFloat(0.2 * totalFitness, totalFitness);
 
 		Genome theChosenOne = null;
 
@@ -75,25 +75,26 @@ public class GenericAlgorithm {
 	public void crossover(List<Double> mum, List<Double> dad, List<Double> baby1, List<Double> baby2) {
 		if (rand.randomFloat() > crossoverRate || mum == dad) {
 			for (int i = 0; i < mum.size(); i++) {
-				baby1.add(mum.get(i));
-				baby2.add(dad.get(i));
+					baby1.add(rand.randomClamped());
+					baby2.add(rand.randomClamped());
 			}
-
 			return;
 		}
 
-		int cp = rand.randomInt(0, chromosomeLength - 1);
+		for (int i = 0; i < mum.size(); i++) {
+			if (rand.randomBoolean()) {
+				baby1.add(mum.get(i));
+			} else {
+				baby1.add(dad.get(i));
+			}
 
-		for (int i = 0; i < cp; i++) {
-			baby1.add(mum.get(i));
-			baby2.add(dad.get(i));
+			if (rand.randomBoolean()) {
+				baby2.add(mum.get(i));
+			} else {
+				baby2.add(dad.get(i));
+			}
 		}
 
-		for (int i = cp; i < mum.size(); i++) {
-			baby1.add(dad.get(i));
-			baby2.add(mum.get(i));
-		}
-		return;
 	}
 
 	public List<Genome> runEpoche(List<Genome> oldPopulation) {
@@ -101,7 +102,7 @@ public class GenericAlgorithm {
 
 		reset();
 
-		population.sort((o1, o2) ->  (int) (o1.fitness - o2.fitness));
+		population.sort((o1, o2) -> (int) (o1.fitness - o2.fitness));
 
 		calculateBestWorstAvTot();
 
@@ -133,7 +134,7 @@ public class GenericAlgorithm {
 	}
 
 	private void grabNBest(int nBest, int numCopies, List<Genome> population) {
-		while (nBest > 0 && nBest < populationSize) {
+		while (nBest > 0 && population.size() < populationSize) {
 			nBest--;
 			for (int i = 0; i < numCopies; i++) {
 				population.add(this.population.get(populationSize - 1 - nBest));

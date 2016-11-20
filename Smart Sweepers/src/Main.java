@@ -55,8 +55,10 @@ public class Main {
 				if (!controller.update()) {
 					done = true;
 				}
+				if(!controller.fastRender()) {
+					frame.repaint();
+				}
 
-				frame.repaint();
 			}
 			if (!controller.fastRender()) {
 				try {
