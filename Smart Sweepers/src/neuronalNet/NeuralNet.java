@@ -104,7 +104,7 @@ public class NeuralNet {
 				int numInputs = neuron.numInputs;
 
 				for (int numWeight = 0; numWeight < numInputs - 1; numWeight++) {
-					netInput += neuron.inputWeight.get(numWeight) * inputs.get(numWeight++);
+					netInput += neuron.inputWeight.get(numWeight) * inputs.get(numWeight);
 				}
 
 				netInput += neuron.inputWeight.get(numInputs - 1) * Parameters.dBias;

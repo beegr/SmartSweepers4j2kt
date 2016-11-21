@@ -50,6 +50,12 @@ public class SVector2D {
 		return Math.sqrt(getX() * getX() + getY() * getY());
 	}
 
+	public double distance(SVector2D other) {
+		double x = this.x - other.x;
+		double y = this.y - other.y;
+		return sqrt(x * x + y * y);
+	}
+
 	public SVector2D normalize() {
 		double length = length();
 
@@ -82,5 +88,11 @@ public class SVector2D {
 
 	public void setY(double y) {
 		this.y = y;
+	}
+	
+	private double sqrt(double d) {
+		double sqrt = Double.longBitsToDouble( ( ( Double.doubleToLongBits( d )-(1l<<52) )>>1 ) + ( 1l<<61 ) );
+		
+		return (sqrt + d/sqrt)/2.0;
 	}
 }

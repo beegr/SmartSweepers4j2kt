@@ -80,7 +80,7 @@ public class Minesweeper {
 		
 		List<Double> output = itsBrain.update(inputs);
 		
-		if (output.size() < Parameters.iNumOutputs) {
+		if (output.size() != Parameters.iNumOutputs) {
 			return false;
 		}
 
@@ -93,7 +93,7 @@ public class Minesweeper {
 
 		rotation += rotForce;
 
-		speed = lTrack + rTrack;
+		speed = (lTrack + rTrack) * Parameters.dMaxSpeed/2;
 
 		lookAt.setX(-Math.sin(rotation));
 		lookAt.setY(Math.cos(rotation));
@@ -118,7 +118,7 @@ public class Minesweeper {
 
 		for (int i = 0; i < mines.size(); i++) {
 			SVector2D currentMine = mines.get(i);
-			double lenToOjbect = currentMine.subN(position).length();
+			double lenToOjbect = currentMine.distance(position);
 
 			if (lenToOjbect < closestSoFar) {
 				closestSoFar = lenToOjbect;
@@ -135,7 +135,7 @@ public class Minesweeper {
 
 		for (int i = 0; i < mines.size(); i++) {
 			SVector2D currentMine = mines.get(i);
-			double lenToOjbect = currentMine.subN(position).length();
+			double lenToOjbect = currentMine.distance(position);
 
 			if (lenToOjbect < closestSoFar) {
 				closestSoFar = lenToOjbect;
@@ -146,8 +146,8 @@ public class Minesweeper {
 		return closestObect;
 	}
 	public int checkForObstacle(List<SVector2D> mines, double size) {
-		SVector2D distanceToObject = position.subN(mines.get(closestObstacle));
-		if (distanceToObject.length() < (size + 5)) {
+		double distance = position.distance(mines.get(closestObstacle));
+		if (distance < (size + 5)) {
 			return closestObstacle;
 		}
 
@@ -155,8 +155,8 @@ public class Minesweeper {
 	}
 	
 	public int checkForMine(List<SVector2D> mines, double size) {
-		SVector2D distanceToObject = position.subN(mines.get(closestMine));
-		if (distanceToObject.length() < (size + 5)) {
+		double distance = position.distance(mines.get(closestMine));
+		if (distance < (size + 5)) {
 			return closestMine;
 		}
 
@@ -172,9 +172,7 @@ public class Minesweeper {
 	}
 	
 	public void decrementFitness() {
-		if(fitness > 1) {
-			fitness -= 2;			
-		}
+			fitness = 0;
 	}
 
 	public double getFitness() {
