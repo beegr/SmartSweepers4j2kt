@@ -1,0 +1,13 @@
+.gitattributes eol=lf
+.gitignore eol=lf
+.name eol=lf
+*.cpp eol=lf
+*.h eol=lf
+*.iml eol=lf
+*.ini eol=lf
+*.java eol=lf
+*.kt eol=lf
+*.md eol=lf
+*.png binary
+*.xml eol=lf
+LICENSE eol=lf
