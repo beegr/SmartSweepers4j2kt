@@ -88,7 +88,7 @@ public class Minesweeper {
 		lookAt.setX(-Math.sin(rotation));
 		lookAt.setY(Math.cos(rotation));
 
-		position.add(lookAt.mul(speed));
+		position.plusAssign(lookAt.times(speed));
 
 		if (position.getX() > Parameters.WindowWidth)
 			position.setX(0);
@@ -108,11 +108,11 @@ public class Minesweeper {
 
 		for (int i = 0; i < mines.size(); i++) {
 			SVector2D currentMine = mines.get(i);
-			double lenToOjbect = currentMine.subN(position).length();
+			double lenToOjbect = currentMine.minus(position).length();
 
 			if (lenToOjbect < closestSoFar) {
 				closestSoFar = lenToOjbect;
-				closestObect = position.subN(currentMine);
+				closestObect = position.minus(currentMine);
 				closestMine = i;
 			}
 		}
@@ -120,7 +120,7 @@ public class Minesweeper {
 	}
 
 	public int checkForMine(List<SVector2D> mines, double size) {
-		SVector2D distanceToObject = position.subN(mines.get(closestMine));
+		SVector2D distanceToObject = position.minus(mines.get(closestMine));
 		if (distanceToObject.length() < (size + 5)) {
 			return closestMine;
 		}
