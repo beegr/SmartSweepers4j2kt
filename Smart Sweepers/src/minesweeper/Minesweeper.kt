@@ -1,6 +1,7 @@
 package minesweeper
 
 import configuration.*
+import generics.*
 import neuronalNet.*
 import utils.*
 import utils.rand.randomFloat
@@ -15,7 +16,7 @@ class Minesweeper {
     private var speed = 0.0
     private var lTrack = 0.16
     private var rTrack = 0.16
-    var fitness: Double = 0.0
+    var fitness = 0
         private set
     private val scale = Parameters.iSweeperScale.toDouble()
 
@@ -26,7 +27,7 @@ class Minesweeper {
     }
 
     fun reset() {
-        fitness = 0.0
+        fitness = 0
         rotation = rand.randomRadian()
         position = SVector2D(randomFloat() * Parameters.WindowWidth, randomFloat() * Parameters.WindowHeight)
     }
@@ -72,11 +73,11 @@ class Minesweeper {
         ++fitness
     }
 
-    fun putWeights(w: List<Double>) =
-        itsBrain.putWeights(w)
+    fun putWeights(fx: ReadWeight) =
+        itsBrain.putWeights(fx)
 
     val numberOfWeights: Int
-        get() = itsBrain.numberOfWeights
+        get() = NeuralNet.numberOfWeights
 
     private companion object {
         /** if outside of bounds, returns nearest */
