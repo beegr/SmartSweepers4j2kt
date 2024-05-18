@@ -2,7 +2,7 @@ package utils
 
 class Timer(fps: Float) {
     init {
-        require(!(fps <= 0.0)) { "FPS of 0 is not allowed" }
+        require(fps > 0.0) { "FPS must be positive" }
     }
 
     private var currentTime = 0L

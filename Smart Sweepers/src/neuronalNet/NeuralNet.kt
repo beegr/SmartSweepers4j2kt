@@ -1,18 +1,22 @@
 package neuronalNet
 
 import configuration.*
+import generics.*
 import utils.*
-import kotlin.math.exp
+import kotlin.math.*
 
-private class Neuron(nominalInputSize: Int) {
-    // we need an additional weight for the (neural-net) bias hence the nominal+1
-    val inputSize = nominalInputSize + 1
+// we need an additional weight for the (neural-net) bias hence the +1
+@Suppress("NOTHING_TO_INLINE")
+private inline fun Size.bias(): Size = this + 1
+
+private class Neuron(nominalInputSize: Size) {
+    val inputSize: Size = nominalInputSize.bias()
 
     // initial values for weights are triangular random numbers (between -1 and 1) peaking at zero.
     val weights = MutableList(inputSize) { rand.randomClamped() }
 }
 
-private class Layer(layerSize: Int, inputsPerNeuron: Int) {
+private class Layer(layerSize: Size, inputsPerNeuron: Size) {
     val neurons = List(layerSize) { Neuron(inputsPerNeuron) }
 }
 
@@ -20,10 +24,30 @@ private fun sigmoid(rawOutput: Double, dActivationResponse: Double) =
     1 / (1 + exp(-rawOutput / dActivationResponse))
 
 class NeuralNet {
-    private val numInputs = Parameters.iNumInputs
-    private val numOutputs = Parameters.iNumOutputs
-    private val numHiddenLayers = Parameters.iNumHidden
-    private val numNeuronsPerHiddenLayer = Parameters.iNeuronsPerHiddenLayer
+    companion object {
+        // all the parameters below are determined lazily, so that they can be read into
+        // Parameters before any NeuralNet instance is created.
+        private val numInputs: Size by lazy {
+            Parameters.iNumInputs.also { require(it > 0) { "inputs: $it, must be positive" } }
+        }
+        private val numOutputs: Size by lazy {
+            Parameters.iNumOutputs.also { require(it > 0) { "outputs: $it, must be positive" } }
+        }
+        private val numHiddenLayers: Size by lazy {
+            Parameters.iNumHidden.also { require(it >= 0) { "hidden layers: $it, must not be negative" } }
+        }
+        private val numNeuronsPerHiddenLayer: Size by lazy {
+            Parameters.iNeuronsPerHiddenLayer.also { require(numHiddenLayers == 0 || it > 0) { "neurons per hidden layer: $it, must be positive when using hidden layers" } }
+        }
+
+        @JvmStatic
+        val numberOfWeights by lazy {
+            if (numHiddenLayers == 0) numOutputs * numInputs.bias()
+            else numNeuronsPerHiddenLayer * numInputs.bias() +
+                    (numHiddenLayers - 1) * numNeuronsPerHiddenLayer * numNeuronsPerHiddenLayer.bias() +
+                    numOutputs * numNeuronsPerHiddenLayer.bias()
+        }
+    }
 
     private val layers = sequence {
         // with no hidden layers ...
@@ -40,14 +64,12 @@ class NeuralNet {
         }
     }.toList()
 
-    val numberOfWeights by lazy { layers.flatMap { l -> l.neurons.map { n -> n.weights.size } }.sum() }
-
     @Suppress("unused", "MemberVisibilityCanBePrivate")
     fun getWeights() = layers.flatMap { l -> l.neurons.flatMap { n -> n.weights } }
 
-    fun putWeights(allWeightsForNetFlattened: List<Double>) {
+    fun putWeights(weightByAbsoluteIndex: ReadWeight) {
         var weightAbsoluteIndex = 0
-        fun nextWeight() = allWeightsForNetFlattened[weightAbsoluteIndex]
+        fun nextWeight() = weightByAbsoluteIndex(weightAbsoluteIndex)
             .also { weightAbsoluteIndex += 1 }
 
         layers.forEach { l ->

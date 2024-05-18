@@ -1,6 +1,6 @@
 package minesweeper;
 
-import generics.GenericAlgorithm;
+import generics.GeneticAlgorithm;
 import generics.Genome;
 
 import java.awt.Color;
@@ -24,7 +24,7 @@ public class Controller {
 	List<Minesweeper> sweepers;
 	List<SVector2D> mines;
 
-	GenericAlgorithm genericAlg;
+	GeneticAlgorithm geneticAlgorithm;
 
 	int numSweepers;
 	int numMines;
@@ -33,8 +33,8 @@ public class Controller {
 	List<SPoint> sweeperVB;
 	List<SPoint> mineVB;
 
-	List<Double> avgFitness;
-	List<Double> bestFitness;
+	List<Integer> medianFitness;
+	List<Integer> bestFitness;
 
 	Color redPen;
 	Color bluePen;
@@ -57,7 +57,7 @@ public class Controller {
 	final SPoint[] mine = new SPoint[] { new SPoint(-1, -1), new SPoint(-1, 1), new SPoint(1, 1), new SPoint(1, -1) };
 
 	public Controller(JFrame frame) {
-		numSweepers = Parameters.iNumSweepers;
+		numSweepers = GeneticAlgorithm.getGenomeCount();
 		fastRender = false;
 		ticks = 0;
 		numMines = Parameters.iNumMines;
@@ -68,7 +68,7 @@ public class Controller {
 
 		sweepers = new ArrayList<>();
 		bestFitness = new ArrayList<>();
-		avgFitness = new ArrayList<>();
+		medianFitness = new ArrayList<>();
 
 		for (int i = 0; i < numSweepers; i++) {
 			sweepers.add(new Minesweeper());
@@ -76,12 +76,12 @@ public class Controller {
 
 		numWeightsinNN = sweepers.get(0).getNumberOfWeights();
 
-		genericAlg = new GenericAlgorithm(numSweepers, Parameters.dMutationRate, Parameters.dCrossoverRate, numWeightsinNN);
+		geneticAlgorithm = new GeneticAlgorithm();
 
-		thePopulation = genericAlg.getChromos();
+		thePopulation = geneticAlgorithm.getChromes();
 
 		for (int i = 0; i < numSweepers; i++) {
-			sweepers.get(i).putWeights(thePopulation.get(i).getWeights());
+			sweepers.get(i).putWeights(thePopulation.get(i)::weight);
 		}
 
 		mines = new ArrayList<>();
@@ -147,16 +147,16 @@ public class Controller {
 				thePopulation.get(i).setFitness(currentSweeper.getFitness());
 			}
 		} else {
-			avgFitness.add(genericAlg.getAverageFitness());
-			bestFitness.add(genericAlg.getBestFitness());
+			medianFitness.add(geneticAlgorithm.getMedianFitness());
+			bestFitness.add(geneticAlgorithm.getBestFitness());
 
 			++generations;
 			ticks = 0;
 
-			thePopulation = genericAlg.runEpoche(thePopulation);
+			thePopulation = geneticAlgorithm.runEpoch();
 
 			for (int i = 0; i < numSweepers; i++) {
-				sweepers.get(i).putWeights(thePopulation.get(i).getWeights());
+				sweepers.get(i).putWeights(thePopulation.get(i)::weight);
 				sweepers.get(i).reset();
 			}
 		}
@@ -191,7 +191,7 @@ public class Controller {
 			g2.setColor(redPen);
 
 			for (int i = 0; i < numSweepers; i++) {
-				if (i == Parameters.iNumElite) {
+				if (i == GeneticAlgorithm.getDesiredElites()) {
 					g2.setColor(oldPen);
 				}
 
@@ -245,21 +245,21 @@ public class Controller {
 	}
 
 	private void plotStats(Graphics2D g2) {
-		String s = "Best Fitness: " + genericAlg.getBestFitness();
+		String s = "Best Fitness: " + geneticAlgorithm.getBestFitness();
 		g2.drawString(s, 5, 40);
 
-		s = "Average Fitness: " + genericAlg.getAverageFitness();
+		s = "Median Fitness: " + geneticAlgorithm.getMedianFitness();
 		g2.drawString(s, 5, 60);
 
 		float hSlice = (float) (xClient / (generations + 1.0));
-		float vSlice = (float) (yClient / ((genericAlg.getBestFitness() + 1) * 2));
+		float vSlice = (float) (yClient / ((geneticAlgorithm.getBestFitness() + 1) * 2));
 
 		float x = 0;
 
 		oldPen = g2.getColor();
 		g2.setColor(redPen);
 
-		if (bestFitness.size() == 0 || avgFitness.size() == 0) {
+		if (bestFitness.size() == 0 || medianFitness.size() == 0) {
 			return;
 		}
 		double firstX = 0;
@@ -285,15 +285,15 @@ public class Controller {
 		firstX = 0;
 		firstY = yClient;
 		secondX = x;
-		secondY = yClient - vSlice * avgFitness.get(0);
+		secondY = yClient - vSlice * medianFitness.get(0);
 		line = new Line2D.Double(firstX, firstY, secondX, secondY);
 		g2.draw(line);
-		for (int vert = 1; vert < avgFitness.size(); vert++) {
+		for (int vert = 1; vert < medianFitness.size(); vert++) {
 			firstX = secondX;
 			firstY = secondY;
 
 			secondX = x;
-			secondY = yClient - vSlice * avgFitness.get(vert);
+			secondY = yClient - vSlice * medianFitness.get(vert);
 			line = new Line2D.Double(firstX, firstY, secondX, secondY);
 			g2.draw(line);
 
