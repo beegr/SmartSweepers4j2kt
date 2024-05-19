@@ -117,14 +117,14 @@ public class Controller {
 		fastRender = !fastRender;
 	}
 
-	public void worldTransform(List<SPoint> buffer, SVector2D pos) {
+	public List<SPoint> worldTransform(List<SPoint> buffer, SVector2D pos) {
 		C2DMatrix matTransform = new C2DMatrix();
 
 		matTransform.scale(Parameters.dMineScale, Parameters.dMineScale);
 
 		matTransform.translate(pos.getX(), pos.getY());
 
-		matTransform.transformSPoints(buffer);
+		return matTransform.transformSPoints(buffer);
 	}
 
 	public boolean update() {
@@ -173,12 +173,7 @@ public class Controller {
 
 			for (int i = 0; i < numMines; i++) {
 
-				List<SPoint> mineVBnew = new ArrayList<SPoint>();
-				for (SPoint point : mineVB) {
-					mineVBnew.add(new SPoint(point.getX(), point.getY()));
-				}
-
-				worldTransform(mineVBnew, mines.get(i));
+				List<SPoint> mineVBnew = worldTransform(mineVB, mines.get(i));
 
 				for (int vert = 0; vert < mineVBnew.size() - 1; vert++) {
 					int currVert = vert;
@@ -200,12 +195,7 @@ public class Controller {
 					g2.setColor(oldPen);
 				}
 
-				List<SPoint> sweeperVB = new ArrayList<>();
-				for (SPoint sPoint : this.sweeperVB) {
-					sweeperVB.add(new SPoint(sPoint.getX(), sPoint.getY()));
-				}
-
-				sweepers.get(i).worldTransform(sweeperVB);
+				List<SPoint> sweeperVB = sweepers.get(i).worldTransform(this.sweeperVB);
 
 				for (int vert = 0; vert < 3; vert++) {
 					int currVert = vert;

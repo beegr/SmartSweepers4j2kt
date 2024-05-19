@@ -43,7 +43,7 @@ public class Minesweeper {
 		position = new SVector2D(rand.randomFloat() * Parameters.WindowWidth, rand.randomFloat() * Parameters.WindowHeight);
 	}
 
-	public void worldTransform(List<SPoint> sweeper) {
+	public List<SPoint> worldTransform(List<SPoint> sweeper) {
 		C2DMatrix matTransform = new C2DMatrix();
 
 		matTransform.scale(scale, scale);
@@ -52,7 +52,7 @@ public class Minesweeper {
 
 		matTransform.translate(position.getX(), position.getY());
 
-		matTransform.transformSPoints(sweeper);
+		return matTransform.transformSPoints(sweeper);
 	}
 
 	public boolean update(List<SVector2D> mines) {
