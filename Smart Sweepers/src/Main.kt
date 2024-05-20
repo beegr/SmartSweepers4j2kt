@@ -39,13 +39,21 @@ object Main {
             ?: throw IllegalStateException("compile problem: couldn't read internal params.ini")
         val panel = Gui()
         val frame = JFrame(applicationName).also { it.add(panel) }
-        val controller = Controller().also { panel.controller = it }
+        var controller = Controller().also { panel.controller = it }
 
+        val timer = Timer(Parameters.iFramesPerSecond.toFloat()).also { it.start() }
+        var done = false
         with(frame) {
             addKeyListener(object : KeyAdapter() {
                 override fun keyReleased(e: KeyEvent) {
                     when (e.keyCode) {
+                        KeyEvent.VK_Q -> done = true
                         KeyEvent.VK_F -> controller.fastRenderToggle()
+                        KeyEvent.VK_P -> timer.togglePause()
+                        KeyEvent.VK_R -> { // reset, start from scratch
+                            controller = Controller().also { panel.controller = it }
+                            timer.start()
+                        }
                     }
                 }
             })
@@ -55,14 +63,15 @@ object Main {
             isVisible = true
         }
 
-        val timer = Timer(Parameters.iFramesPerSecond.toFloat()).also { it.start() }
-        var done = false
         while (!done) {
-            if (timer.readyForNextFrame() || controller.fastRender) {
-                if (!controller.update()) done = true
-                frame.repaint()
+            if (timer.paused) Thread.sleep(250)
+            else {
+                if (timer.readyForNextFrame() || controller.fastRender) {
+                    controller.update()
+                    frame.repaint()
+                }
+                if (!controller.fastRender) Thread.sleep(1)
             }
-            if (!controller.fastRender) Thread.sleep(1)
         }
         frame.isVisible = false
         exitProcess(0)
