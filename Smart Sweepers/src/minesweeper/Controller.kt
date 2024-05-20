@@ -100,7 +100,7 @@ class Controller {
             this
         }
 
-    fun update(): Boolean {
+    fun update() {
         if (ticks++ < Parameters.iNumTicks) {
             sweepers.forEachIndexed { i, currentSweeper ->
                 currentSweeper.update(mineLocations)
@@ -127,7 +127,6 @@ class Controller {
                 sweeper.reset()
             }
         }
-        return true
     }
 
     private fun createLineGraph(): (List<Fitness>) -> Unit {

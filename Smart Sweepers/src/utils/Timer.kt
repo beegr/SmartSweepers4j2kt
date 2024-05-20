@@ -5,6 +5,10 @@ class Timer(fps: Float) {
         require(fps > 0.0) { "FPS must be positive" }
     }
 
+    private var pausedAt: Long? = null
+    val paused: Boolean
+        get() = pausedAt != null
+
     private var currentTime = 0L
     private var lastTime = 0L
     private var nextTime = 0L
@@ -16,11 +20,23 @@ class Timer(fps: Float) {
         nextTime = newLast + frameTime
     }
 
-    fun start() = resetLastAndNextTimesFrom(System.nanoTime())
+    fun start() {
+        pausedAt = null
+        resetLastAndNextTimesFrom(System.nanoTime())
+    }
+
+    fun togglePause() {
+        val timePaused = pausedAt?.let { currentTime - it }
+        pausedAt =
+            if (timePaused == null)
+                currentTime
+            else
+                null.also { nextTime += timePaused }
+    }
 
     fun readyForNextFrame(): Boolean {
         val now = System.nanoTime().also { currentTime = it }
-        return (now > nextTime).also { passedNext ->
+        return (!paused && now > nextTime).also { passedNext ->
             if (passedNext) {
                 timeElapsed = (now - lastTime).toDouble()
                 resetLastAndNextTimesFrom(now)
@@ -28,4 +44,3 @@ class Timer(fps: Float) {
         }
     }
 }
-
