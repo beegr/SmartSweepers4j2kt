@@ -20,7 +20,7 @@ class Minesweeper {
         private set
     private val scale = Parameters.iSweeperScale.toDouble()
 
-    private var closestMine: Int = 0
+    private var closestMine: Index = 0
 
     init {
         reset()
@@ -41,6 +41,11 @@ class Minesweeper {
         }
 
     fun update(mines: List<SVector2D>) {
+        // NOTE: while the sweepers will wrap around to keep them in the testing ground should
+        // they leave, the mines are not 'seen' wrapped around.  There's only enough Portal Guns
+        // available for us to keep the sweepers from getting trapped in corners, etc., and we
+        // got them in a ding-and-dent sale from somebody called CJ.
+
         val (between, found) = position.vectorToClosestOf(mines)
         closestMine = found
         val towardClosestMine = between.normalize()
@@ -88,7 +93,7 @@ class Minesweeper {
             else this
 
         /** determines the nearest place in list, returns a vector *to* it, and its list-index */
-        fun SVector2D.vectorToClosestOf(places: List<SVector2D>) =
+        fun SVector2D.vectorToClosestOf(places: List<SVector2D>): Pair<SVector2D, Index> =
             places
                 .mapIndexed { i, place ->
                     val vectorBetween = this - place
