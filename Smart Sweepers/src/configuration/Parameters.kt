@@ -11,16 +11,9 @@ object Parameters {
     // ^^^ ︎THOUGHT: I mean, ideally, the 'owning' algorithm that provided and used
     // the above would know this itself to request the NeuralNet I/O it needed.
 
-    // each input has its own weight, and there's usually another amount, a bias or
-    // threshold to be subtracted, so its multiple should always be -1 and not really
-    // configurable
-    var dBias = -1.0
-        private set
     var iNumHidden = 0 // are there any extra (hidden) layers?
         private set
     var iNeuronsPerHiddenLayer = 0 // and if so, how many neurons do each of those have?
-        private set
-    var dActivationResponse = 1.0 // lastly, a parameter for the activation function, but normally always 1
         private set
 
     // Genetic Algorithm parameters ---------------------------------------------------------
@@ -81,24 +74,24 @@ object Parameters {
         fun String.getInt() = findAndParse(this, "integer") { it.toIntOrNull() }
         fun String.getDouble() = findAndParse(this, "float") { it.toDoubleOrNull() }
 
-        iFramesPerSecond = "iFramesPerSecond".getInt()
         iNumInputs = "iNumInputs".getInt()
+        iNumOutputs = "iNumOutputs".getInt()
         iNumHidden = "iNumHidden".getInt()
         iNeuronsPerHiddenLayer = "iNeuronsPerHiddenLayer".getInt()
-        iNumOutputs = "iNumOutputs".getInt()
-        dActivationResponse = "dActivationResponse".getDouble()
-        dBias = "dBias".getDouble()
-        dMaxTurnRate = "dMaxTurnRate".getDouble()
-        dMaxSpeed = "dMaxSpeed".getDouble()
-        iSweeperScale = "iSweeperScale".getInt()
-        iNumMines = "iNumMines".getInt()
         iNumSweepers = "iNumSweepers".getInt()
-        iNumTicks = "iNumTicks".getInt()
-        dMineScale = "dMineScale".getDouble()
+        iNumElite = "iNumElite".getInt()
+        iNumCopiesElite = "iNumCopiesElite".getInt()
         dCrossoverRate = "dCrossoverRate".getDouble()
         dMutationRate = "dMutationRate".getDouble()
         dMaxPerturbation = "dMaxPerturbation".getDouble()
-        iNumElite = "iNumElite".getInt()
-        iNumCopiesElite = "iNumCopiesElite".getInt()
+        WindowWidth = "iWindowWidth".getInt()
+        WindowHeight = "iWindowHeight".getInt()
+        iSweeperScale = "iSweeperScale".getInt()
+        dMaxTurnRate = "dMaxTurnRate".getDouble()
+        dMaxSpeed = "dMaxSpeed".getDouble()
+        iNumMines = "iNumMines".getInt()
+        dMineScale = "dMineScale".getDouble()
+        iNumTicks = "iNumTicks".getInt()
+        iFramesPerSecond = "iFramesPerSecond".getInt()
     }
 }
