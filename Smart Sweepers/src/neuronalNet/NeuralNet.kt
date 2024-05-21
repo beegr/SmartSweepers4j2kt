@@ -20,8 +20,8 @@ private class Layer(layerSize: Size, inputsPerNeuron: Size) {
     val neurons = List(layerSize) { Neuron(inputsPerNeuron) }
 }
 
-private fun sigmoid(rawOutput: Double, dActivationResponse: Double) =
-    1 / (1 + exp(-rawOutput / dActivationResponse))
+private fun sigmoid(rawOutput: Double) =
+    1 / (1 + exp(-rawOutput))
 
 class NeuralNet {
     companion object {
@@ -83,9 +83,9 @@ class NeuralNet {
     fun update(inputs: List<Double>) =
         layers.fold(inputs) { passed, l ->
             l.neurons.map { n ->
-                n.weights.zip(passed.plus(Parameters.dBias))
+                n.weights.zip(passed.plus(/* bias */ -1.0))
                     .fold(0.0) { acc, weightInputPair -> acc + weightInputPair.first * weightInputPair.second }
-                    .let { sigmoid(it, Parameters.dActivationResponse) }
+                    .let { sigmoid(it) }
             }
         }
 }
