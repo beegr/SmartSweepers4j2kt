@@ -3,7 +3,7 @@ package neuronalNet;
 import java.util.ArrayList;
 import java.util.List;
 
-import utils.Random;
+import utils.rand;
 
 public class SNeuron {
 	int numInputs;
@@ -13,7 +13,6 @@ public class SNeuron {
 		this.numInputs = numInputs + 1;
 		inputWeight = new ArrayList<>();
 
-		Random rand = new Random();
 		for (int i = 0; i < this.numInputs; i++) {
 			inputWeight.add(rand.randomClamped());
 		}

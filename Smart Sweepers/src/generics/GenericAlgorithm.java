@@ -3,7 +3,7 @@ package generics;
 import java.util.ArrayList;
 import java.util.List;
 
-import utils.Random;
+import utils.rand;
 import configuration.Parameters;
 
 public class GenericAlgorithm {
@@ -21,8 +21,6 @@ public class GenericAlgorithm {
 	double crossoverRate;
 	int generation;
 
-	private Random rand;
-
 	public GenericAlgorithm(int populationSize, double mutationRate, double crossoverRate, int numWeights) {
 		super();
 		this.populationSize = populationSize;
@@ -34,7 +32,6 @@ public class GenericAlgorithm {
 		reset();
 
 		population = new ArrayList<>();
-		rand = new Random();
 		for (int i = 0; i < populationSize; i++) {
 			Genome genome = new Genome();
 			population.add(genome);

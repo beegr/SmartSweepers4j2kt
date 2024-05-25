@@ -13,7 +13,7 @@ import java.util.List;
 import javax.swing.JFrame;
 
 import utils.C2DMatrix;
-import utils.Random;
+import utils.rand;
 import utils.SPoint;
 import utils.SVector2D;
 import configuration.Parameters;
@@ -49,8 +49,6 @@ public class Controller {
 	int xClient;
 	int yClient;
 
-	Random rand;
-
 	final SPoint[] sweeper = new SPoint[] { new SPoint(-1, -1), new SPoint(-1, 1), new SPoint(-0.5, 1),
 			new SPoint(-0.5, -1), new SPoint(0.5, -1), new SPoint(1, -1), new SPoint(1, 1), new SPoint(0.5, 1),
 			new SPoint(-0.5, -0.5), new SPoint(0.5, -0.5), new SPoint(-0.5, 0.5), new SPoint(-0.25, 0.5),
@@ -69,7 +67,6 @@ public class Controller {
 		yClient = Parameters.WindowHeight;
 
 		sweepers = new ArrayList<>();
-		rand = new Random();
 		bestFitness = new ArrayList<>();
 		avgFitness = new ArrayList<>();
 

@@ -5,7 +5,7 @@ import java.util.List;
 
 import neuronalNet.NeuralNet;
 import utils.C2DMatrix;
-import utils.Random;
+import utils.rand;
 import utils.SPoint;
 import utils.SVector2D;
 import configuration.Parameters;
@@ -25,10 +25,7 @@ public class Minesweeper {
 
 	int closestMine;
 
-	Random rand;
-
 	public Minesweeper() {
-		rand = new Random();
 		lTrack = 0.16;
 		rTrack = 0.16;
 		scale = Parameters.iSweeperScale;
