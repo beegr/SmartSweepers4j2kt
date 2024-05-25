@@ -1,5 +1,3 @@
-package utils
-
 import kotlin.math.*
 
 class SVector2D(var x: Double, var y: Double) {

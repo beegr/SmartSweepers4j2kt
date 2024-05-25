@@ -1,8 +1,5 @@
 @file:Suppress("ConstPropertyName")
 
-import configuration.*
-import minesweeper.*
-import utils.Timer
 import java.awt.*
 import java.awt.event.*
 import java.awt.geom.*

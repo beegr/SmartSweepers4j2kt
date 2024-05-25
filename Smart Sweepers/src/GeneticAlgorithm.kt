@@ -1,9 +1,3 @@
-package generics
-
-import configuration.*
-import neuronalNet.*
-import utils.*
-
 typealias Fitness = Int
 typealias Index = Int
 typealias Size = Int

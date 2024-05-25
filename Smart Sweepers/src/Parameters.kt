@@ -1,5 +1,3 @@
-package configuration
-
 import java.io.*
 
 object Parameters {
