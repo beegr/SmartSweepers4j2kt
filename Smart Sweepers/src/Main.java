@@ -28,18 +28,18 @@ public class Main {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				switch (e.getKeyCode()) {
-				case KeyEvent.VK_ESCAPE:
-					System.exit(0);
-					break;
-				case KeyEvent.VK_F:
-					controller.fastRenderToggle();
-					break;
-				case KeyEvent.VK_R:
-					if (controller != null) {
-						// controller = new Controller(frame);
-					}
-				case KeyEvent.VK_P:
-					// TODO pause mode
+					case KeyEvent.VK_ESCAPE:
+						System.exit(0);
+						break;
+					case KeyEvent.VK_F:
+						controller.fastRenderToggle();
+						break;
+					case KeyEvent.VK_R:
+						if (controller != null) {
+							// controller = new Controller(frame);
+						}
+					case KeyEvent.VK_P:
+						// TODO pause mode
 				}
 			}
 		});

@@ -7,9 +7,6 @@ import minesweeper.Controller;
 
 public class Gui extends JPanel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 6233705413503026349L;
 	Controller controller;
 
