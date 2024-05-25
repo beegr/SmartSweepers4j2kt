@@ -1,5 +1,3 @@
-package utils
-
 import kotlin.math.*
 
 class SPoint(val x: Double, val y: Double) {

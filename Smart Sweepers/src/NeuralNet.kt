@@ -1,8 +1,3 @@
-package neuronalNet
-
-import configuration.*
-import generics.*
-import utils.*
 import kotlin.math.*
 
 // we need an additional weight for the (neural-net) bias hence the +1

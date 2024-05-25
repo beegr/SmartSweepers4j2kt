@@ -1,13 +1,8 @@
-package minesweeper
-
-import configuration.*
-import generics.*
-import generics.GeneticAlgorithm.Companion.copiesPerElite
-import generics.GeneticAlgorithm.Companion.desiredElites
-import generics.GeneticAlgorithm.Companion.genomeCount
-import generics.GeneticAlgorithm.Companion.idx
-import utils.*
-import utils.rand.randomFloat
+import GeneticAlgorithm.Companion.copiesPerElite
+import GeneticAlgorithm.Companion.desiredElites
+import GeneticAlgorithm.Companion.genomeCount
+import GeneticAlgorithm.Companion.idx
+import rand.randomFloat
 
 typealias DrawLine = (x1: Double, y1: Double, x2: Double, y2: Double) -> Unit
 typealias DrawText = (s: String, x: Int, y: Int) -> Unit

@@ -1,5 +1,3 @@
-package utils
-
 import kotlin.random.*
 
 @Suppress("ClassName")

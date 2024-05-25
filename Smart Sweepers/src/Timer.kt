@@ -1,5 +1,3 @@
-package utils
-
 class Timer(fps: Float) {
     init {
         require(fps > 0.0) { "FPS must be positive" }

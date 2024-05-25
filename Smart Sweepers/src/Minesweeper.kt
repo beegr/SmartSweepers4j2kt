@@ -1,10 +1,4 @@
-package minesweeper
-
-import configuration.*
-import generics.*
-import neuronalNet.*
-import utils.*
-import utils.rand.randomFloat
+import rand.randomFloat
 import kotlin.math.*
 
 class Minesweeper {
