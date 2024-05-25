@@ -9,7 +9,7 @@ import configuration.Parameters;
 
 public class Main {
 
-	String applicationName = "Smart Sweepers 4j v1.0";
+	static String applicationName = "Smart Sweepers 4j v1.0";
 
 	Controller controller = null;
 
@@ -17,7 +17,7 @@ public class Main {
 
 		Parameters.loadInParameters(Main.class.getResourceAsStream("params.ini"));
 		Gui panel = new Gui();
-		JFrame frame = new JFrame("Test");
+		JFrame frame = new JFrame(applicationName);
 		frame.add(panel);
 
 		Controller controller = new Controller(frame);

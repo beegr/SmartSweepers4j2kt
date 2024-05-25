@@ -7,6 +7,10 @@ public class S2DMatrix {
 	double _31, _32, _33;
 
 	S2DMatrix() {
+		reset();
+	}
+
+	public void reset() {
 		_11 = 0;
 		_12 = 0;
 		_13 = 0;
