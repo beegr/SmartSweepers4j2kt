@@ -1,10 +1,10 @@
 import kotlin.math.*
 
 class Point(val x: Double, val y: Double) {
-    operator fun times(matrix: C2DMatrix) = matrix.adjustPoint(this).let { Point(it.first, it.second) }
+    operator fun times(matrix: Matrix) = matrix.adjustPoint(this).let { Point(it.first, it.second) }
 }
 
-class C2DMatrix {
+class Matrix {
     private companion object {
         val identity = S2DMatrix(_11 = 1.0, _22 = 1.0, _33 = 1.0)
     }

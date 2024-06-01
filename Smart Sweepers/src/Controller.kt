@@ -7,7 +7,7 @@ import rand.randomFloat
 typealias DrawLine = (x1: Double, y1: Double, x2: Double, y2: Double) -> Unit
 typealias DrawText = (s: String, x: Int, y: Int) -> Unit
 typealias ChangePen = () -> Unit
-typealias RenderTransform = (DrawLine, C2DMatrix) -> Unit
+typealias RenderTransform = (DrawLine, Matrix) -> Unit
 
 class Controller {
     lateinit var line: DrawLine
@@ -92,7 +92,7 @@ class Controller {
     private var thePopulation = genAlg.chromes
 
     private fun worldTransformMatrixFor(pos: SVector2D) =
-        with(C2DMatrix()) {
+        with(Matrix()) {
             scale(Parameters.dMineScale, Parameters.dMineScale)
             translate(pos.x, pos.y)
             this
