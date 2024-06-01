@@ -24,12 +24,7 @@ class Minesweeper {
     }
 
     fun worldTransformMatrix() =
-        with(Matrix()) {
-            scale(scale, scale)
-            rotate(rotation)
-            translate(position.x, position.y)
-            this
-        }
+        Matrix.startWith.scaling(scale, scale).thenRotate(rotation).thenTranslate(position.x, position.y)
 
     fun update(mines: List<Point>) {
         // NOTE: while the sweepers will wrap around to keep them in the testing ground should

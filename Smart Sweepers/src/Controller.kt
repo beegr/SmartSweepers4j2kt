@@ -92,11 +92,7 @@ class Controller {
     private var thePopulation = genAlg.chromes
 
     private fun worldTransformMatrixFor(pos: Point) =
-        with(Matrix()) {
-            scale(Parameters.dMineScale, Parameters.dMineScale)
-            translate(pos.x, pos.y)
-            this
-        }
+        Matrix.startWith.scaling(Parameters.dMineScale, Parameters.dMineScale).thenTranslate(pos.x, pos.y)
 
     fun update() {
         if (ticks++ < Parameters.iNumTicks) {
