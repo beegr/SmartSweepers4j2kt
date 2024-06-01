@@ -27,7 +27,7 @@ class Minesweeper {
     }
 
     fun worldTransformMatrix() =
-        with(C2DMatrix()) {
+        with(Matrix()) {
             scale(scale, scale)
             rotate(rotation)
             translate(position.x, position.y)
