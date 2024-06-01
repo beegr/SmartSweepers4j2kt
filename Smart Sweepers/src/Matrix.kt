@@ -21,53 +21,77 @@ fun rotationToPoint(angleFromUp: Double) = Point(-sin(angleFromUp), cos(angleFro
 
 class Matrix {
     private companion object {
-        val identity = S2DMatrix(_11 = 1.0, _22 = 1.0, _33 = 1.0)
+        val identity = S2DMatrix().apply {
+            this[1, 1] = 1.0
+            this[2, 2] = 1.0
+            this[3, 3] = 1.0
+        }
+
+        fun translation(x: Double, y: Double) = S2DMatrix().apply {
+            this[1, 1] = 1.0
+            this[2, 2] = 1.0
+            this[3, 1] = x
+            this[3, 2] = y
+            this[3, 3] = 1.0
+        }
+
+        fun scaling(xScale: Double, yScale: Double) = S2DMatrix().apply {
+            this[1, 1] = xScale
+            this[2, 2] = yScale
+            this[3, 3] = 1.0
+        }
+
+        fun rotation(rot: Double) = S2DMatrix().apply {
+            val sine = sin(rot)
+            val cosine = cos(rot)
+            this[1, 1] = cosine
+            this[1, 2] = sine
+            this[2, 1] = -sine
+            this[2, 2] = cosine
+            this[3, 3] = 1.0
+        }
     }
 
     private var matrix = identity
 
     fun translate(x: Double, y: Double) {
-        matrix *= S2DMatrix(_11 = 1.0, _22 = 1.0, _31 = x, _32 = y, _33 = 1.0)
+        matrix *= translation(x, y)
     }
 
     fun scale(xScale: Double, yScale: Double) {
-        matrix *= S2DMatrix(_11 = xScale, _22 = yScale, _33 = 1.0)
+        matrix *= scaling(xScale, yScale)
     }
 
     fun rotate(rot: Double) {
-        val sine = sin(rot)
-        val cosine = cos(rot)
-        matrix *= S2DMatrix(_11 = cosine, _12 = sine, _21 = -sine, _22 = cosine, _33 = 1.0)
+        matrix *= rotation(rot)
     }
 
     fun adjustPoint(p: Point) = Pair(
-        (matrix._11 * p.x) + (matrix._21 * p.y) + (matrix._31),
-        (matrix._12 * p.x) + (matrix._22 * p.y) + (matrix._32)
+        (matrix[1, 1] * p.x) + (matrix[2, 1] * p.y) + (matrix[3, 1]),
+        (matrix[1, 2] * p.x) + (matrix[2, 2] * p.y) + (matrix[3, 2])
     )
 
     fun transformPoints(points: List<Point>) = points.map { it * this }
 
-    @Suppress("PropertyName")
-    private class S2DMatrix(
-        val _11: Double = 0.0, val _12: Double = 0.0, val _13: Double = 0.0,
-        val _21: Double = 0.0, val _22: Double = 0.0, val _23: Double = 0.0,
-        val _31: Double = 0.0, val _32: Double = 0.0, val _33: Double = 0.0
-    ) {
-        private val show by lazy { "$_11  $_12  $_13\n$_21  $_22  $_23\n$_31  $_32  $_33\n" }
-        override fun toString() = show
+    @Suppress("NOTHING_TO_INLINE")
+    private class S2DMatrix {
+        // @formatter:off
+        private val mm = DoubleArray(9)
+        // one-based indexing [1..3, 1..3] to matrix values
+        private inline fun i(r: Int, c: Int) = (r - 1) * 3 + (c - 1)
+        inline operator fun get(r: Int, c: Int) = mm[i(r, c)]
+        inline operator fun set(r: Int, c: Int, v: Double) { mm[i(r, c)] = v }
+        // @formatter:on
 
-        operator fun times(o: S2DMatrix) = S2DMatrix(
-            _11 = (_11 * o._11) + (_12 * o._21) + (_13 * o._31),
-            _12 = (_11 * o._12) + (_12 * o._22) + (_13 * o._32),
-            _13 = (_11 * o._13) + (_12 * o._23) + (_13 * o._33),
+        override fun toString() =
+            "${this[1, 1]}  ${this[1, 2]}  ${this[1, 3]}\n${this[2, 1]}  ${this[2, 2]}  ${this[2, 3]}\n${this[3, 1]}  ${this[3, 2]}  ${this[3, 3]}\n"
 
-            _21 = (_21 * o._11) + (_22 * o._21) + (_23 * o._31),
-            _22 = (_21 * o._12) + (_22 * o._22) + (_23 * o._32),
-            _23 = (_21 * o._13) + (_22 * o._23) + (_23 * o._33),
-
-            _31 = (_31 * o._11) + (_32 * o._21) + (_33 * o._31),
-            _32 = (_31 * o._12) + (_32 * o._22) + (_33 * o._32),
-            _33 = (_31 * o._13) + (_32 * o._23) + (_33 * o._33)
-        )
+        operator fun times(b: S2DMatrix) = S2DMatrix().also { c ->
+            val a = this@S2DMatrix
+            for (i in 1..3)
+                for (j in 1..3)
+                    for (k in 1..3)
+                        c[i, j] += a[i, k] * b[k, j]
+        }
     }
 }
