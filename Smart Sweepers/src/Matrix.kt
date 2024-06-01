@@ -1,8 +1,15 @@
 import kotlin.math.*
 
-class Point(val x: Double, val y: Double) {
-    operator fun times(matrix: Matrix) = matrix.adjustPoint(this).let { Point(it.first, it.second) }
-}
+/** Rather than creating another type for Point, we'll just use an alias to an immutable pair of doubles */
+typealias Point = Pair<Double, Double>
+
+// But as it is still nice to refer to x,y for Points, we'll create some extension properties to provide them
+val Point.x: Double
+    inline get() = this.first
+val Point.y: Double
+    inline get() = this.second
+
+operator fun Point.times(matrix: Matrix) = matrix.adjustPoint(this)
 
 class Matrix {
     private companion object {
