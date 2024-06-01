@@ -143,7 +143,7 @@ class Controller {
             fits
                 .runningFold(origin) { (x, _), fitness -> (x + hSlice) to (yClient - vSlice * fitness) }
                 .windowed(2)
-                .forEach { line(it[0].first, it[0].second, it[1].first, it[1].second) }
+                .forEach { line(it[0].x, it[0].y, it[1].x, it[1].y) }
         }
     }
 
