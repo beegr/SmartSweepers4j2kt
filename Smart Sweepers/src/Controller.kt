@@ -29,13 +29,13 @@ class Controller {
     private val mineLocations = MutableList(numMines) { SVector2D(randomFloat() * xClient, randomFloat() * yClient) }
 
     companion object {
-        private fun createOutlineRenderer(sPoints: List<SPoint>, lines: List<Pair<Index, Index>>): RenderTransform {
+        private fun createOutlineRenderer(points: List<Point>, lines: List<Pair<Index, Index>>): RenderTransform {
             val pointsUsed = lines.flatMap { (a, b) -> listOf(a, b) }.distinct()
-            val pointsAvailable = 0..sPoints.size.idx()
+            val pointsAvailable = 0..points.size.idx()
             require(pointsUsed.all { it in pointsAvailable }) { "some lines use points not included" }
 
             return { draw, matrix ->
-                val xPoints = matrix.transformSPoints(sPoints)
+                val xPoints = matrix.transformPoints(points)
                 lines.forEach { (a, b) -> draw(xPoints[a].x, xPoints[a].y, xPoints[b].x, xPoints[b].y) }
             }
         }
@@ -43,25 +43,25 @@ class Controller {
         val drawSweeper: RenderTransform =
             createOutlineRenderer(
                 listOf(
-                    SPoint(-1.0, -1.0), // right track
-                    SPoint(-1.0, 1.0),
-                    SPoint(-0.5, 1.0),
-                    SPoint(-0.5, -1.0),
+                    Point(-1.0, -1.0), // right track
+                    Point(-1.0, 1.0),
+                    Point(-0.5, 1.0),
+                    Point(-0.5, -1.0),
 
-                    SPoint(0.5, -1.0), // left track
-                    SPoint(1.0, -1.0),
-                    SPoint(1.0, 1.0),
-                    SPoint(0.5, 1.0),
+                    Point(0.5, -1.0), // left track
+                    Point(1.0, -1.0),
+                    Point(1.0, 1.0),
+                    Point(0.5, 1.0),
 
-                    SPoint(-0.5, -0.5), // rear
-                    SPoint(0.5, -0.5),
+                    Point(-0.5, -0.5), // rear
+                    Point(0.5, -0.5),
 
-                    SPoint(-0.5, 0.5), // front
-                    SPoint(-0.25, 0.5),
-                    SPoint(-0.25, 1.75),
-                    SPoint(0.25, 1.75),
-                    SPoint(0.25, 0.5),
-                    SPoint(0.5, 0.5)
+                    Point(-0.5, 0.5), // front
+                    Point(-0.25, 0.5),
+                    Point(-0.25, 1.75),
+                    Point(0.25, 1.75),
+                    Point(0.25, 0.5),
+                    Point(0.5, 0.5)
                 ),
                 listOf(
                     0 to 1, 1 to 2, 2 to 3, 3 to 0,
@@ -73,7 +73,7 @@ class Controller {
 
         val drawMine: RenderTransform =
             createOutlineRenderer(
-                listOf(SPoint(-1.0, -1.0), SPoint(-1.0, 1.0), SPoint(1.0, 1.0), SPoint(1.0, -1.0)),
+                listOf(Point(-1.0, -1.0), Point(-1.0, 1.0), Point(1.0, 1.0), Point(1.0, -1.0)),
                 listOf(0 to 1, 1 to 2, 2 to 3, 3 to 0)
             )
     }

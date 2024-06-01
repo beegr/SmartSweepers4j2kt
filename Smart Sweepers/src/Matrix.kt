@@ -1,7 +1,7 @@
 import kotlin.math.*
 
-class SPoint(val x: Double, val y: Double) {
-    operator fun times(matrix: C2DMatrix) = matrix.adjustPoint(this).let { SPoint(it.first, it.second) }
+class Point(val x: Double, val y: Double) {
+    operator fun times(matrix: C2DMatrix) = matrix.adjustPoint(this).let { Point(it.first, it.second) }
 }
 
 class C2DMatrix {
@@ -25,12 +25,12 @@ class C2DMatrix {
         matrix *= S2DMatrix(_11 = cosine, _12 = sine, _21 = -sine, _22 = cosine, _33 = 1.0)
     }
 
-    fun adjustPoint(p: SPoint) = Pair(
+    fun adjustPoint(p: Point) = Pair(
         (matrix._11 * p.x) + (matrix._21 * p.y) + (matrix._31),
         (matrix._12 * p.x) + (matrix._22 * p.y) + (matrix._32)
     )
 
-    fun transformSPoints(vPoint: List<SPoint>) = vPoint.map { it * this }
+    fun transformPoints(points: List<Point>) = points.map { it * this }
 
     @Suppress("PropertyName")
     private class S2DMatrix(
