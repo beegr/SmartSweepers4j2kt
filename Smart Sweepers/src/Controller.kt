@@ -29,6 +29,20 @@ class Controller {
     private val mineLocations = MutableList(numMines) { Point(randomFloat() * xClient, randomFloat() * yClient) }
 
     companion object {
+        private val sweeperScale by lazy {
+            Parameters.iSweeperScale.toDouble()
+                .also { require(it > 0.0) { "sweeper scale: $it, must be positive" } }
+        }
+
+        private val mineScale by lazy {
+            Parameters.dMineScale
+                .also { require(it > 0.0) { "mine scale: $it, must be positive" } }
+        }
+
+        val closeEnough by lazy {
+            sweeperScale + mineScale
+        }
+
         private fun createOutlineRenderer(points: List<Point>, lines: List<Pair<Index, Index>>): RenderTransform {
             val pointsUsed = lines.flatMap { (a, b) -> listOf(a, b) }.distinct()
             val pointsAvailable = 0..points.size.idx()
@@ -40,28 +54,30 @@ class Controller {
             }
         }
 
-        val drawSweeper: RenderTransform =
+        val drawSweeper: RenderTransform by lazy {
             createOutlineRenderer(
-                listOf(
-                    Point(-1.0, -1.0), // right track
-                    Point(-1.0, 1.0),
-                    Point(-0.5, 1.0),
-                    Point(-0.5, -1.0),
+                Matrix.startWith.scaling(sweeperScale, sweeperScale).transformPoints(
+                    listOf(
+                        Point(-1.0, -1.0), // right track
+                        Point(-1.0, 1.0),
+                        Point(-0.5, 1.0),
+                        Point(-0.5, -1.0),
 
-                    Point(0.5, -1.0), // left track
-                    Point(1.0, -1.0),
-                    Point(1.0, 1.0),
-                    Point(0.5, 1.0),
+                        Point(0.5, -1.0), // left track
+                        Point(1.0, -1.0),
+                        Point(1.0, 1.0),
+                        Point(0.5, 1.0),
 
-                    Point(-0.5, -0.5), // rear
-                    Point(0.5, -0.5),
+                        Point(-0.5, -0.5), // rear
+                        Point(0.5, -0.5),
 
-                    Point(-0.5, 0.5), // front
-                    Point(-0.25, 0.5),
-                    Point(-0.25, 1.75),
-                    Point(0.25, 1.75),
-                    Point(0.25, 0.5),
-                    Point(0.5, 0.5)
+                        Point(-0.5, 0.5), // front
+                        Point(-0.25, 0.5),
+                        Point(-0.25, 1.75),
+                        Point(0.25, 1.75),
+                        Point(0.25, 0.5),
+                        Point(0.5, 0.5)
+                    )
                 ),
                 listOf(
                     0 to 1, 1 to 2, 2 to 3, 3 to 0,
@@ -70,12 +86,16 @@ class Controller {
                     10 to 11, 11 to 12, 12 to 13, 13 to 14, 15 to 10
                 )
             )
+        }
 
-        val drawMine: RenderTransform =
+        val drawMine: RenderTransform by lazy {
             createOutlineRenderer(
-                listOf(Point(-1.0, -1.0), Point(-1.0, 1.0), Point(1.0, 1.0), Point(1.0, -1.0)),
+                Matrix.startWith.scaling(mineScale, mineScale).transformPoints(
+                    listOf(Point(-1.0, -1.0), Point(-1.0, 1.0), Point(1.0, 1.0), Point(1.0, -1.0))
+                ),
                 listOf(0 to 1, 1 to 2, 2 to 3, 3 to 0)
             )
+        }
     }
 
     private val medianFitness = mutableListOf<Fitness>()
@@ -92,14 +112,14 @@ class Controller {
     private var thePopulation = genAlg.chromes
 
     private fun worldTransformMatrixFor(pos: Point) =
-        Matrix.startWith.scaling(Parameters.dMineScale, Parameters.dMineScale).thenTranslate(pos.x, pos.y)
+        Matrix.startWith.translation(pos.x, pos.y)
 
     fun update() {
         if (ticks++ < Parameters.iNumTicks) {
             sweepers.forEachIndexed { i, currentSweeper ->
                 currentSweeper.update(mineLocations)
 
-                val grabHit = currentSweeper.checkForMine(mineLocations, Parameters.dMineScale)
+                val grabHit = currentSweeper.checkForMine(mineLocations, closeEnough)
 
                 if (grabHit >= 0) {
                     currentSweeper.incrementFitness()
