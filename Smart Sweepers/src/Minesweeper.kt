@@ -8,7 +8,6 @@ class Minesweeper {
     private var rotation = 0.0
     var fitness = 0
         private set
-    private val scale = Parameters.iSweeperScale.toDouble()
 
     private var closestMine: Index = 0
 
@@ -24,7 +23,7 @@ class Minesweeper {
     }
 
     fun worldTransformMatrix() =
-        Matrix.startWith.scaling(scale, scale).thenRotate(rotation).thenTranslate(position.x, position.y)
+        Matrix.startWith.rotation(rotation).thenTranslate(position.x, position.y)
 
     fun update(mines: List<Point>) {
         // NOTE: while the sweepers will wrap around to keep them in the testing ground should
