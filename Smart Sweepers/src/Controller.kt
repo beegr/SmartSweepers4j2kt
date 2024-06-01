@@ -15,6 +15,7 @@ class Controller {
     lateinit var redPen: ChangePen
     lateinit var greenPen: ChangePen
     lateinit var bluePen: ChangePen
+    lateinit var repaint: () -> Unit
 
     private val genAlg = GeneticAlgorithm()
     private val sweepers =
@@ -125,6 +126,7 @@ class Controller {
                 sweeper.reset()
             }
             generations++
+            repaint()
         }
     }
 
