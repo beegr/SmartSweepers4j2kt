@@ -30,13 +30,18 @@ class Gui : JComponent() {
 object Main {
     private const val applicationName = "Smart Sweepers 4j v1.0"
 
+    fun newController(gui: Gui, repaint: () -> Unit) = Controller().also {
+        gui.controller = it
+        it.repaint = repaint
+    }
+
     @JvmStatic
     fun main(args: Array<String>) {
         Main::class.java.getResourceAsStream("params.ini")?.let { Parameters.loadInParameters(it) }
             ?: throw IllegalStateException("compile problem: couldn't read internal params.ini")
         val panel = Gui()
         val frame = JFrame(applicationName).also { it.add(panel) }
-        var controller = Controller().also { panel.controller = it }
+        var controller = newController(panel, frame::repaint)
 
         val timer = Timer(Parameters.iFramesPerSecond.toFloat()).also { it.start() }
         var done = false
@@ -48,7 +53,7 @@ object Main {
                         KeyEvent.VK_F -> controller.fastRenderToggle()
                         KeyEvent.VK_P -> timer.togglePause()
                         KeyEvent.VK_R -> { // reset, start from scratch
-                            controller = Controller().also { panel.controller = it }
+                            controller = newController(panel, frame::repaint)
                             timer.start()
                         }
                     }
@@ -65,7 +70,7 @@ object Main {
             else {
                 if (timer.readyForNextFrame() || controller.fastRender) {
                     controller.update()
-                    frame.repaint()
+                    if (!controller.fastRender) frame.repaint()
                 }
                 if (!controller.fastRender) Thread.sleep(1)
             }
