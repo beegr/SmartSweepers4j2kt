@@ -42,7 +42,7 @@ class Minesweeper {
 
         rotation += (lTrack - rTrack).boundedBy(-Parameters.dMaxTurnRate, Parameters.dMaxTurnRate)
 
-        val speed = lTrack + rTrack
+        val speed = (lTrack + rTrack) * Parameters.iSpeedScale
 
         lookAt = rotationToPoint(rotation)
 
