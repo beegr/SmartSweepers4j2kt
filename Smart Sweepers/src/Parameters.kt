@@ -41,7 +41,7 @@ object Parameters {
         private set
     var dMaxTurnRate = 0.3 // at most, how fast can it turn
         private set
-    var dMaxSpeed = 0.0 // IGNORED currently; at most, how fast can it move
+    var iSpeedScale = 1 // helpful if testing ground gets bigger
         private set
 
     var iNumMines = 0 // the mines to be swept
@@ -86,7 +86,7 @@ object Parameters {
         WindowHeight = "iWindowHeight".getInt()
         iSweeperScale = "iSweeperScale".getInt()
         dMaxTurnRate = "dMaxTurnRate".getDouble()
-        dMaxSpeed = "dMaxSpeed".getDouble()
+        iSpeedScale = "iSpeedScale".getInt()
         iNumMines = "iNumMines".getInt()
         dMineScale = "dMineScale".getDouble()
         iNumTicks = "iNumTicks".getInt()
