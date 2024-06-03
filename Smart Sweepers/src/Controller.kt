@@ -39,7 +39,7 @@ class Controller {
                 .also { require(it > 0.0) { "mine scale: $it, must be positive" } }
         }
 
-        val closeEnough by lazy {
+        private val closeEnough by lazy {
             sweeperScale + mineScale
         }
 
@@ -147,19 +147,26 @@ class Controller {
         }
     }
 
-    private fun createLineGraph(): (List<Fitness>) -> Unit {
-        // to fit line-graph within screen
-        val hSlice = xClient / (generations + 1.0)
-        val vSlice = (yClient - 80.0) / (peak.first + 1.0)
-
-        val origin = 0.0 to yClient.toDouble()
+    private fun createLineGraph(): (Iterable<Fitness>) -> Unit {
+        // points in graph are x,y of (generation, fitness)
+        // to fit line-graph within screen ...
+        val hScale = xClient / (generations + 1.0)
+        val vScale = (yClient - 80.0) / (peak.first + 1.0)
+        val graphWorld = Matrix
+            // ... but remember, the screen's y increases downward ...
+            .startWith.scaling(hScale, -vScale)
+            // ... with the origin at the top
+            .thenTranslate(0.0, yClient.toDouble())
 
         return { fits ->
-            // runningFold including the initial point (origin) works to our advantage
-            fits
-                .runningFold(origin) { (x, _), fitness -> (x + hSlice) to (yClient - vSlice * fitness) }
+            val graphPoints = sequence {
+                yield(-1.0 to 0.0)
+                fits.forEachIndexed { i, f -> yield(i.toDouble() to f.toDouble()) }
+            }.asIterable()
+                .let { graphWorld.transformPoints(it) }
                 .windowed(2)
-                .forEach { line(it[0].x, it[0].y, it[1].x, it[1].y) }
+
+            graphPoints.forEach { line(it[0].x, it[0].y, it[1].x, it[1].y) }
         }
     }
 
