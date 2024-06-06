@@ -22,6 +22,7 @@ class Gui : JComponent() {
         controller.redPen = { g2.color = Color.RED }
         controller.greenPen = { g2.color = Color.GREEN }
         controller.bluePen = { g2.color = Color.BLUE }
+        controller.grayPen = { g2.color = Color.GRAY }
 
         controller.render()
     }

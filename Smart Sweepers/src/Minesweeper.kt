@@ -14,7 +14,10 @@ class Minesweeper {
         private set
     private val scale = Parameters.iSweeperScale.toDouble()
 
-    private var closestMine: Index = 0
+    var closestMine: Index = 0
+        private set
+    var closestBlock: Index = 0
+        private set
 
     init {
         reset()
@@ -34,17 +37,30 @@ class Minesweeper {
             this
         }
 
-    fun update(mines: List<SVector2D>) {
+    fun update(mines: List<SVector2D>, obstacles: List<SVector2D>) {
         // NOTE: while the sweepers will wrap around to keep them in the testing ground should
         // they leave, the mines are not 'seen' wrapped around.  There's only enough Portal Guns
         // available for us to keep the sweepers from getting trapped in corners, etc., and we
         // got them in a ding-and-dent sale from somebody called CJ.
 
-        val (between, found) = position.vectorToClosestOf(mines)
-        closestMine = found
-        val towardClosestMine = between.normalize()
+        val towardClosestMine: SVector2D
+        position.vectorToClosestOf(mines).let {
+            towardClosestMine = it.first.normalize()
+            closestMine = it.second
+        }
+        val towardClosestBlock: SVector2D
+        position.vectorToClosestOf(obstacles).let {
+            towardClosestBlock = it.first.normalize()
+            closestBlock = it.second
+        }
 
-        val output = itsBrain.update(listOf(towardClosestMine.x, towardClosestMine.y, lookAt.x, lookAt.y))
+        val output = itsBrain.update(
+            listOf(
+                towardClosestMine.x, towardClosestMine.y,
+                towardClosestBlock.x, towardClosestBlock.y,
+                lookAt.x, lookAt.y
+            )
+        )
 
         lTrack = output[0]; rTrack = output[1]
 
@@ -62,12 +78,16 @@ class Minesweeper {
         }
     }
 
-    fun checkForMine(mines: List<SVector2D>, size: Double) =
-        if (position.closeEnoughForJazz(mines[closestMine], size)) closestMine
+    fun checkForThing(things: List<SVector2D>, closestThing: Index, size: Double) =
+        if (position.closeEnoughForJazz(things[closestThing], size)) closestThing
         else -1
 
     fun incrementFitness() {
         ++fitness
+    }
+
+    fun decrementFitness() {
+        if (fitness > 1) fitness -= 2
     }
 
     fun putWeights(fx: ReadWeight) =

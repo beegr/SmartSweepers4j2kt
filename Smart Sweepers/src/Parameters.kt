@@ -48,6 +48,8 @@ object Parameters {
         private set
     var dMineScale = 2.0 // how big they are
         private set
+    var iNumTraps = 0 // the blocks to avoid
+        private set
 
     // more significant than for just animation, the product of these two numbers is how
     // many "moves" a sweeper gets per generation to get to and sweep mines
@@ -89,6 +91,7 @@ object Parameters {
         dMaxSpeed = "dMaxSpeed".getDouble()
         iNumMines = "iNumMines".getInt()
         dMineScale = "dMineScale".getDouble()
+        iNumTraps = "iNumTraps".getInt()
         iNumTicks = "iNumTicks".getInt()
         iFramesPerSecond = "iFramesPerSecond".getInt()
     }

@@ -15,6 +15,7 @@ class Controller {
     lateinit var redPen: ChangePen
     lateinit var greenPen: ChangePen
     lateinit var bluePen: ChangePen
+    lateinit var grayPen: ChangePen
 
     private val genAlg = GeneticAlgorithm()
     private val sweepers =
@@ -24,7 +25,9 @@ class Controller {
     private val yClient: Size = Parameters.WindowHeight
 
     private val numMines: Int = Parameters.iNumMines
-    private val mineLocations = MutableList(numMines) { SVector2D(randomFloat() * xClient, randomFloat() * yClient) }
+    private val mines = MutableList(numMines) { SVector2D(randomFloat() * xClient, randomFloat() * yClient) }
+    private val numTraps: Int = Parameters.iNumTraps
+    private val traps = MutableList(numTraps) { SVector2D(randomFloat() * xClient, randomFloat() * yClient) }
 
     companion object {
         private fun createOutlineRenderer(sPoints: List<SPoint>, lines: List<Pair<Index, Index>>): RenderTransform {
@@ -103,13 +106,20 @@ class Controller {
     fun update() {
         if (ticks++ < Parameters.iNumTicks) {
             sweepers.forEachIndexed { i, currentSweeper ->
-                currentSweeper.update(mineLocations)
+                currentSweeper.update(mines, traps)
 
-                val grabHit = currentSweeper.checkForMine(mineLocations, Parameters.dMineScale)
+                val grabHit = currentSweeper.checkForThing(mines, currentSweeper.closestMine, Parameters.dMineScale)
 
                 if (grabHit >= 0) {
                     currentSweeper.incrementFitness()
-                    mineLocations[grabHit] = SVector2D(randomFloat() * xClient, randomFloat() * yClient)
+                    mines[grabHit] = SVector2D(randomFloat() * xClient, randomFloat() * yClient)
+                }
+
+                val grabTrap = currentSweeper.checkForThing(traps, currentSweeper.closestBlock, Parameters.dMineScale)
+
+                if (grabTrap >= 0) {
+                    currentSweeper.decrementFitness()
+                    traps[grabTrap] = SVector2D(randomFloat() * xClient, randomFloat() * yClient)
                 }
 
                 thePopulation[i].fitness = currentSweeper.fitness
@@ -153,7 +163,11 @@ class Controller {
         if (!fastRender) {
             // mines are green
             greenPen()
-            mineLocations.forEach { drawMine(line, worldTransformMatrixFor(it)) }
+            mines.forEach { drawMine(line, worldTransformMatrixFor(it)) }
+
+            // obstacles are gray
+            grayPen()
+            traps.forEach { drawMine(line, worldTransformMatrixFor(it)) }
 
             // sweepers are ordered strongest to weakest, so elites are first, and red
             // (there are no elites in generation zero, though.)
