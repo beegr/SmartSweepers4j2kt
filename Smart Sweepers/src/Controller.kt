@@ -74,10 +74,14 @@ class Controller {
                 listOf(SPoint(-1.0, -1.0), SPoint(-1.0, 1.0), SPoint(1.0, 1.0), SPoint(1.0, -1.0)),
                 listOf(0 to 1, 1 to 2, 2 to 3, 3 to 0)
             )
+
+        fun MutableList<*>.trimToLast(maxEntries: Size) {
+            while (size > maxEntries) removeAt(0)
+        }
     }
 
-    private val medianFitness = mutableListOf<Fitness>()
-    private val bestFitness = mutableListOf<Fitness>()
+    private val medianFitness = mutableListOf(0)
+    private val bestFitness = mutableListOf(0)
     private var peak = 0 to 0
 
     var fastRender = false
@@ -114,7 +118,9 @@ class Controller {
             ticks = 0
 
             thePopulation = genAlg.runEpoch()
+            medianFitness.trimToLast(99)
             medianFitness.add(genAlg.medianFitness)
+            bestFitness.trimToLast(99)
             bestFitness.add(genAlg.bestFitness)
             if (genAlg.bestFitness > peak.first) {
                 peak = genAlg.bestFitness to generations
@@ -130,15 +136,14 @@ class Controller {
 
     private fun createLineGraph(): (List<Fitness>) -> Unit {
         // to fit line-graph within screen
-        val hSlice = xClient / (generations + 1.0)
+        val hSlice = xClient / (bestFitness.size + 1.0)
         val vSlice = (yClient - 80.0) / (peak.first + 1.0)
 
-        val origin = 0.0 to yClient.toDouble()
+        val zeroCarry = 0.0 to 0.0
 
         return { fits ->
-            // runningFold including the initial point (origin) works to our advantage
             fits
-                .runningFold(origin) { (x, _), fitness -> (x + hSlice) to (yClient - vSlice * fitness) }
+                .carriedFold(zeroCarry) { (x, _), fitness -> (x + hSlice) to (yClient - vSlice * fitness) }
                 .windowed(2)
                 .forEach { line(it[0].first, it[0].second, it[1].first, it[1].second) }
         }

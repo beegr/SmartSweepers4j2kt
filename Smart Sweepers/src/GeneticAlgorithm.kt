@@ -205,3 +205,7 @@ fun <T, R> Iterable<T>.carriedFold(carry: R, mapping: (R, T) -> R) = iterator {
 inline fun <T, reified R> Array<out T>.carriedFold(carry: R, noinline mapping: (acc: R, T) -> R) =
     if (isEmpty()) emptyArray()
     else asIterable().carriedFold(carry, mapping).iterator().let { seq -> Array(size) { seq.next() } }
+
+inline fun <T, reified R> List<T>.carriedFold(carry: R, noinline mapping: (acc: R, T) -> R) =
+    if (isEmpty()) emptyList()
+    else asIterable().carriedFold(carry, mapping).iterator().let { seq -> List(size) { seq.next() } }
