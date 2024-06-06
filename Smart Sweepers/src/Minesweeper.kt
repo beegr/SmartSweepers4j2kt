@@ -66,7 +66,7 @@ class Minesweeper {
 
         rotation += (lTrack - rTrack).boundedBy(-Parameters.dMaxTurnRate, Parameters.dMaxTurnRate)
 
-        speed = lTrack + rTrack
+        speed = (lTrack + rTrack) * Parameters.dMaxSpeed / 2
 
         lookAt.x = -sin(rotation); lookAt.y = cos(rotation)
 
@@ -87,7 +87,7 @@ class Minesweeper {
     }
 
     fun decrementFitness() {
-        if (fitness > 1) fitness -= 2
+        fitness = 0
     }
 
     fun putWeights(fx: ReadWeight) =
@@ -110,15 +110,15 @@ class Minesweeper {
         fun SVector2D.vectorToClosestOf(places: List<SVector2D>): Pair<SVector2D, Index> =
             places
                 .mapIndexed { i, place ->
-                    val vectorBetween = this - place
-                    val distanceBetween = vectorBetween.length()
+                    val distanceBetween = this.distance(place)
+                    val vectorBetween = lazy { this - place }
                     Triple(distanceBetween, vectorBetween, i)
                 }
                 .minBy { it.first }
-                .let { it.second to it.third }
+                .let { it.second.value to it.third }
 
         /** So if you are "close enough for Jazz" are you thus "On the Jazz"? */
         fun SVector2D.closeEnoughForJazz(place: SVector2D, size: Double) =
-            (this - place).length() < size + 5
+            this.distance(place) < size + 5
     }
 }
