@@ -52,27 +52,15 @@ class GeneticAlgorithm {
 
         private val chromosomeLength: Size by lazy { NeuralNet.numberOfWeights }
 
-        private fun crossover(at: Index?, count: Size, fxA: ReadWeight, fxB: ReadWeight): Pair<Weights, Weights> {
-            // turn the cross-over point into a simple question: is this point before the cross-over?
-            val beforeCrossover: (Index) -> Boolean =
-                at?.let { cp -> { idx -> idx < cp } }
-                // of course, if there's no cross-over point, then we're always 'before' it.
-                    ?: { true }
+        private fun crossover(mix: Boolean, count: Size, fxA: ReadWeight, fxB: ReadWeight): Pair<Weights, Weights> {
+            val possibleMixAndMutation: (Index) -> Weight =
+                if (mix)
+                    { idx: Index -> (if (rand.randomBoolean()) fxA(idx) else fxB(idx)).allowForPossibleMutation() }
+                else
+                    { _ -> rand.randomClamped() }
 
-            // NOTE: as well as making it possible to initialize an array while creating it
-            fun possibleSwitchAndMutation(forChildA: Boolean): (Index) -> Weight {
-                // determine the before/after weights by child: Child A starts with Parent A, Child B with Parent B
-                val (fxBefore, fxAfter) = if (forChildA) fxA to fxB else fxB to fxA
-                // now we can return a function that reads the correct weight by index alone ...
-                return { idx: Index ->
-                    (if (beforeCrossover(idx)) fxBefore(idx) else fxAfter(idx))
-                        // .. but each weight has the chance to mutate before all become 'fixed'
-                        .allowForPossibleMutation()
-                }
-            }
-
-            val childA = Weights(count, possibleSwitchAndMutation(true))
-            val childB = Weights(count, possibleSwitchAndMutation(false))
+            val childA = Weights(count, possibleMixAndMutation)
+            val childB = Weights(count, possibleMixAndMutation)
             return childA to childB
         }
 
@@ -122,31 +110,14 @@ class GeneticAlgorithm {
                 }
             }
 
-            // So, I'm not really fond of the cross-over determination as historically implemented.
-            // I'm not changing it right now, to keep the expected population fitness growth as
-            // previously seen, but I want to note that as-written, the cross-over rate experienced
-            // is always going to be smaller than the rate specified.
-            //
-            // 1) As the determination of parentB doesn't exclude parentA, when they are the same,
-            //    this *also* means no cross-over.
-            // 2) The cross-over point includes the possibility of index 0 which means the children
-            //    are each still entirely from one parent, effectively the same as no cross-over.
-            //
-            // However, even with no cross-over, mutation may mean the children aren't identical to
-            // the parents, nor to each other.  Roll enough dice and the chances of not seeing a '1'
-            // become increasingly scant.
-
             repeat((genomeCount - scupltor.elite * scupltor.copies) / 2) {
                 val parentA = fxGenome(runRoulette())
                 val parentB = fxGenome(runRoulette())
-                // determine if there should be a cross-over, and at what point
-                val crossOverPoint =
-                    if (parentA !== parentB && rand.randomFloat() <= crossoverRate)
-                        rand.randomInt(0, chromosomeLength - 1)
-                    else null
+                // determine if there should be a mix, or new random weights
+                val mix = parentA !== parentB && rand.randomFloat() <= crossoverRate
 
                 val (weightsChildA, weightsChildB) =
-                    crossover(crossOverPoint, chromosomeLength, parentA::weight, parentB::weight)
+                    crossover(mix, chromosomeLength, parentA::weight, parentB::weight)
                 yield(Genome(weightsChildA))
                 yield(Genome(weightsChildB))
             }
