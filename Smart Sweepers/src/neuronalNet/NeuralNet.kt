@@ -40,7 +40,6 @@ class NeuralNet {
             Parameters.iNeuronsPerHiddenLayer.also { require(numHiddenLayers == 0 || it > 0) { "neurons per hidden layer: $it, must be positive when using hidden layers" } }
         }
 
-        @JvmStatic
         val numberOfWeights by lazy {
             if (numHiddenLayers == 0) numOutputs * numInputs.bias()
             else numNeuronsPerHiddenLayer * numInputs.bias() +

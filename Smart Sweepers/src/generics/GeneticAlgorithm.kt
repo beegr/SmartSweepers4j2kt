@@ -31,12 +31,8 @@ class GeneticAlgorithm {
 
         // all the parameters below are determined lazily, so that they can be read into
         // Parameters before the GenAlg instance is created.
-        @JvmStatic
         val genomeCount: Size by lazy { Parameters.iNumSweepers.also { require(it > 0 && it.isEven()) { "population size: $it, must be positive amd even" } } }
-
-        @JvmStatic
         val desiredElites: Size by lazy { Parameters.iNumElite.also { require(it > 0) { "elites: $it, must be positive" } } }
-
         val copiesPerElite: Size by lazy { Parameters.iNumCopiesElite.also { require(it > 0) { "copies per elite: $it, must be positive" } } }
         private val dMaxPerturbation by lazy { Parameters.dMaxPerturbation }
         private val mutationRate by lazy { Parameters.dMutationRate }

@@ -32,15 +32,15 @@ class Minesweeper {
         position = SVector2D(randomFloat() * Parameters.WindowWidth, randomFloat() * Parameters.WindowHeight)
     }
 
-    fun worldTransform(sweeper: List<SPoint>) =
+    fun worldTransformMatrix() =
         with(C2DMatrix()) {
             scale(scale, scale)
             rotate(rotation)
             translate(position.x, position.y)
-            transformSPoints(sweeper)
+            this
         }
 
-    fun update(mines: List<SVector2D>): Boolean {
+    fun update(mines: List<SVector2D>) {
         val (between, found) = position.vectorToClosestOf(mines)
         closestMine = found
         val towardClosestMine = between.normalize()
@@ -61,8 +61,6 @@ class Minesweeper {
             x = x.wrappedTo(0.0, Parameters.WindowWidth.toDouble())
             y = y.wrappedTo(0.0, Parameters.WindowHeight.toDouble())
         }
-
-        return true
     }
 
     fun checkForMine(mines: List<SVector2D>, size: Double) =
@@ -75,9 +73,6 @@ class Minesweeper {
 
     fun putWeights(fx: ReadWeight) =
         itsBrain.putWeights(fx)
-
-    val numberOfWeights: Int
-        get() = NeuralNet.numberOfWeights
 
     private companion object {
         /** if outside of bounds, returns nearest */
