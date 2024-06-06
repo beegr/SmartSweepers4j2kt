@@ -79,6 +79,7 @@ class Controller {
 
     private val medianFitness = mutableListOf<Fitness>()
     private val bestFitness = mutableListOf<Fitness>()
+    private var peak = 0 to 0
 
     var fastRender = false
     fun fastRenderToggle() {
@@ -112,23 +113,26 @@ class Controller {
             }
         } else {
             ticks = 0
-            generations++
 
             thePopulation = genAlg.runEpoch()
             medianFitness.add(genAlg.medianFitness)
             bestFitness.add(genAlg.bestFitness)
+            if (genAlg.bestFitness > peak.first) {
+                peak = genAlg.bestFitness to generations
+            }
 
             sweepers.forEachIndexed { i, sweeper ->
                 sweeper.putWeights { idx: Int -> thePopulation[i].weight(idx) }
                 sweeper.reset()
             }
+            generations++
         }
     }
 
     private fun createLineGraph(): (List<Fitness>) -> Unit {
         // to fit line-graph within screen
-        val hSlice = (xClient / (generations + 1.0))
-        val vSlice = (yClient / ((genAlg.bestFitness + 1.0) * 2.0))
+        val hSlice = xClient / (generations + 1.0)
+        val vSlice = (yClient - 80.0) / (peak.first + 1.0)
 
         val origin = 0.0 to yClient.toDouble()
 
@@ -142,8 +146,6 @@ class Controller {
     }
 
     fun render() {
-        text("Generation: $generations", 5, 20)
-
         if (!fastRender) {
             // mines are green
             greenPen()
@@ -160,10 +162,7 @@ class Controller {
                 drawSweeper(line, sweeper.worldTransformMatrix())
             }
         } else {
-            text("Best Fitness: ${genAlg.bestFitness}", 5, 40)
-            text("Median Fitness: ${genAlg.medianFitness}", 5, 60)
-
-            // draw only if there's history
+            // draw lines only if there's history
             if (bestFitness.isNotEmpty()) {
                 // to fit line-graph within screen
                 val lineGraph = createLineGraph()
@@ -175,9 +174,15 @@ class Controller {
                 // average fitness in blue
                 bluePen()
                 lineGraph(medianFitness)
+
+                oldPen()
             }
+            text("Peak Fitness: ${peak.first} [Gen: ${peak.second}]", 5, 40)
+            text("Best Fitness: ${genAlg.bestFitness}", 5, 60)
+            text("Median Fitness: ${genAlg.medianFitness}", 5, 80)
         }
         // ensuring usual color restored in any case.
         oldPen()
+        text("Generation: $generations", 5, 20)
     }
 }
