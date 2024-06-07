@@ -10,6 +10,14 @@ val Point.y: Double
     inline get() = this.second
 
 operator fun Point.times(matrix: Matrix) = matrix.adjustPoint(this)
+operator fun Point.times(scalar: Double) = Point(x * scalar, y * scalar)
+operator fun Point.plus(other: Point) = Point(x + other.x, y + other.y)
+operator fun Point.minus(other: Point) = Point(x - other.x, y - other.y)
+fun Point.length() = sqrt(x * x + y * y)
+fun Point.normalize() = length().let { Point(x / it, y / it) }
+
+/** Turn an angle/rotation, where zero is up, into coordinates on a unit-circle.  */
+fun rotationToPoint(angleFromUp: Double) = Point(-sin(angleFromUp), cos(angleFromUp))
 
 class Matrix {
     private companion object {

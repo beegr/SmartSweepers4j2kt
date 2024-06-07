@@ -26,7 +26,7 @@ class Controller {
     private val yClient: Size = Parameters.WindowHeight
 
     private val numMines: Int = Parameters.iNumMines
-    private val mineLocations = MutableList(numMines) { SVector2D(randomFloat() * xClient, randomFloat() * yClient) }
+    private val mineLocations = MutableList(numMines) { Point(randomFloat() * xClient, randomFloat() * yClient) }
 
     companion object {
         private fun createOutlineRenderer(points: List<Point>, lines: List<Pair<Index, Index>>): RenderTransform {
@@ -91,7 +91,7 @@ class Controller {
     private var generations: Int = 0
     private var thePopulation = genAlg.chromes
 
-    private fun worldTransformMatrixFor(pos: SVector2D) =
+    private fun worldTransformMatrixFor(pos: Point) =
         with(Matrix()) {
             scale(Parameters.dMineScale, Parameters.dMineScale)
             translate(pos.x, pos.y)
@@ -107,7 +107,7 @@ class Controller {
 
                 if (grabHit >= 0) {
                     currentSweeper.incrementFitness()
-                    mineLocations[grabHit] = SVector2D(randomFloat() * xClient, randomFloat() * yClient)
+                    mineLocations[grabHit] = Point(randomFloat() * xClient, randomFloat() * yClient)
                 }
 
                 thePopulation[i].fitness = currentSweeper.fitness
