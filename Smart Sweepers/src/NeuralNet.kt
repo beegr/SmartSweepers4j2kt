@@ -1,23 +1,5 @@
 import kotlin.math.*
 
-// we need an additional weight for the (neural-net) bias hence the +1
-@Suppress("NOTHING_TO_INLINE")
-private inline fun Size.bias(): Size = this + 1
-
-private class Neuron(nominalInputSize: Size) {
-    val inputSize: Size = nominalInputSize.bias()
-
-    // initial values for weights are triangular random numbers (between -1 and 1) peaking at zero.
-    val weights = MutableList(inputSize) { rand.randomClamped() }
-}
-
-private class Layer(layerSize: Size, inputsPerNeuron: Size) {
-    val neurons = List(layerSize) { Neuron(inputsPerNeuron) }
-}
-
-private fun sigmoid(rawOutput: Double) =
-    1 / (1 + exp(-rawOutput))
-
 class NeuralNet {
     companion object {
         // all the parameters below are determined lazily, so that they can be read into
@@ -35,50 +17,56 @@ class NeuralNet {
             Parameters.iNeuronsPerHiddenLayer.also { require(numHiddenLayers == 0 || it > 0) { "neurons per hidden layer: $it, must be positive when using hidden layers" } }
         }
 
-        val numberOfWeights by lazy {
-            if (numHiddenLayers == 0) numOutputs * numInputs.bias()
-            else numNeuronsPerHiddenLayer * numInputs.bias() +
-                    (numHiddenLayers - 1) * numNeuronsPerHiddenLayer * numNeuronsPerHiddenLayer.bias() +
-                    numOutputs * numNeuronsPerHiddenLayer.bias()
+        fun sigmoid(rawOutput: Double) = 1 / (1 + exp(-rawOutput))
+
+        // we need an additional weight for the (neural-net) bias hence the +1
+        @Suppress("NOTHING_TO_INLINE")
+        private inline fun Size.bias(): Size = this + 1
+
+        private val mapping by lazy {
+            sequence {
+                var weightAbsoluteIndex = 0
+                fun nextWeightRange(count: Int) =
+                    (weightAbsoluteIndex..<weightAbsoluteIndex + count)
+                        .also { weightAbsoluteIndex += count }
+
+                if (numHiddenLayers == 0) {
+                    yield((1..numOutputs).map { nextWeightRange(numInputs.bias()) }.toList())
+                } else {
+                    yield((1..numNeuronsPerHiddenLayer).map { nextWeightRange(numInputs.bias()) }.toList())
+                    for (layer in 2..numHiddenLayers)
+                        yield((1..numNeuronsPerHiddenLayer).map { nextWeightRange(numNeuronsPerHiddenLayer.bias()) }
+                            .toList())
+                    yield((1..numOutputs).map { nextWeightRange(numNeuronsPerHiddenLayer.bias()) }.toList())
+                }
+            }.toList()
         }
-    }
 
-    private val layers = sequence {
-        // with no hidden layers ...
-        if (numHiddenLayers <= 0) {
-            // ... there's only a single layer, so it has to directly convert to outputs from inputs
-            yield(Layer(numOutputs, numInputs))
-        } else {
-            // with hidden layers, the first hidden (possibly only) must convert to the hidden from inputs ...
-            yield(Layer(numNeuronsPerHiddenLayer, numInputs))
-            // ... then any other hidden layers keep converting hidden from hidden ...
-            repeat(numHiddenLayers - 1) { yield(Layer(numNeuronsPerHiddenLayer, numNeuronsPerHiddenLayer)) }
-            // ... with the last layer converting to outputs from hidden
-            yield(Layer(numOutputs, numNeuronsPerHiddenLayer))
-        }
-    }.toList()
+        val numberOfWeights by lazy { mapping.last().last().last + 1 }
 
-    @Suppress("unused", "MemberVisibilityCanBePrivate")
-    fun getWeights() = layers.flatMap { l -> l.neurons.flatMap { n -> n.weights } }
-
-    fun putWeights(weightByAbsoluteIndex: ReadWeight) {
-        var weightAbsoluteIndex = 0
-        fun nextWeight() = weightByAbsoluteIndex(weightAbsoluteIndex)
-            .also { weightAbsoluteIndex += 1 }
-
-        layers.forEach { l ->
-            l.neurons.forEach { n ->
-                for (which in n.weights.indices) {
-                    n.weights[which] = nextWeight()
+        fun DoubleArray.asLayers() = asList().let { wholeSpan ->
+            mapping.map { layer ->
+                layer.map { neuron ->
+                    wholeSpan.subList(neuron.first, neuron.last)
                 }
             }
         }
     }
 
+    private val dxWeights = DoubleArray(numberOfWeights) { rand.randomClamped() }
+    private val layers = dxWeights.asLayers()
+
+    @Suppress("unused", "MemberVisibilityCanBePrivate")
+    fun getWeights() = dxWeights.asList()
+
+    fun putWeights(weightByAbsoluteIndex: ReadWeight) {
+        dxWeights.indices.forEach { dxWeights[it] = weightByAbsoluteIndex(it) }
+    }
+
     fun update(inputs: List<Double>) =
-        layers.fold(inputs) { passed, l ->
-            l.neurons.map { n ->
-                n.weights.zip(passed.plus(/* bias */ -1.0))
+        layers.fold(inputs) { passed, layer ->
+            layer.map { neuron ->
+                neuron.zip(passed.plus(/* bias */ -1.0))
                     .fold(0.0) { acc, weightInputPair -> acc + weightInputPair.first * weightInputPair.second }
                     .let { sigmoid(it) }
             }
