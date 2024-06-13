@@ -27,7 +27,7 @@ class Controller {
 
     private val genAlg = GeneticAlgorithm()
     private val sweepers =
-        List(genomeCount) { si -> Minesweeper().also { it.putWeights { pi -> genAlg.genome(si).weight(pi) } } }
+        List(genomeCount) { si -> Minesweeper().also { it.putWeights { pi -> genAlg[si].weight(pi) } } }
 
     private val xClient: Size = Parameters.WindowWidth
     private val yClient: Size = Parameters.WindowHeight

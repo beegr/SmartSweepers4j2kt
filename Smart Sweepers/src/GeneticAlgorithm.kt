@@ -154,7 +154,7 @@ class GeneticAlgorithm {
 
     private var population = Array(genomeCount) { Genome(Weights(chromosomeLength) { rand.randomClamped() }) }
 
-    fun genome(idx: Index) = population[idx]
+    operator fun get(idx: Index) = population[idx]
 
     val chromes get() = population.toList()
 
@@ -178,7 +178,7 @@ class GeneticAlgorithm {
         bestFitness = population.first().fitness
         // EG: bestFitness = 5
 
-        val sculptor = examinePopulation(::genome)
+        val sculptor = examinePopulation(::get)
         medianFitness = population[sculptor.lastFitGenome / 2].fitness
         // EG: lastFitGenome is z2 (z for zero-based, so the third one is z2)
         //     index of median is z2 ÷ 2 => z1
@@ -217,7 +217,7 @@ class GeneticAlgorithm {
             //     but note, z3 is never returned.
         }
 
-        val newPopulation = nextPopulationBy(::genome, sculptor, chromosomeLength, ::runRoulette).toList()
+        val newPopulation = nextPopulationBy(::get, sculptor, chromosomeLength, ::runRoulette).toList()
         population = newPopulation.toTypedArray()
         return newPopulation
     }
