@@ -3,6 +3,7 @@
 import java.awt.*
 import java.awt.event.*
 import java.awt.geom.*
+import java.io.*
 import javax.swing.*
 import kotlin.system.*
 
@@ -37,8 +38,10 @@ object Main {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        Main::class.java.getResourceAsStream("params.ini")?.let { Parameters.loadInParameters(it) }
-            ?: throw IllegalStateException("compile problem: couldn't read internal params.ini")
+        File(args.firstOrNull() ?: "params.ini")
+            .let { if (it.exists()) it else null }
+            ?.let { Parameters.loadInParameters(FileInputStream(it)) }
+            ?: throw IllegalStateException("couldn't locate params.ini; it should be in the working directory or at the location specified as first argument")
         val panel = Gui()
         val frame = JFrame(applicationName).also { it.add(panel) }
         var controller = newController(panel, frame::repaint)
