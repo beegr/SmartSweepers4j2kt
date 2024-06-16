@@ -1,21 +1,14 @@
+import Parameters.Companion.parameters
 import kotlin.math.*
 
 class NeuralNet {
     companion object {
         // all the parameters below are determined lazily, so that they can be read into
         // Parameters before any NeuralNet instance is created.
-        private val numInputs: Size by lazy {
-            Parameters.iNumInputs.also { require(it > 0) { "inputs: $it, must be positive" } }
-        }
-        private val numOutputs: Size by lazy {
-            Parameters.iNumOutputs.also { require(it > 0) { "outputs: $it, must be positive" } }
-        }
-        private val numHiddenLayers: Size by lazy {
-            Parameters.iNumHidden.also { require(it >= 0) { "hidden layers: $it, must not be negative" } }
-        }
-        private val numNeuronsPerHiddenLayer: Size by lazy {
-            Parameters.iNeuronsPerHiddenLayer.also { require(numHiddenLayers == 0 || it > 0) { "neurons per hidden layer: $it, must be positive when using hidden layers" } }
-        }
+        private val numInputs: Size by lazy { parameters.iNumInputs }
+        private val numOutputs: Size by lazy { parameters.iNumOutputs }
+        private val numHiddenLayers: Size by lazy { parameters.iNumHidden }
+        private val numNeuronsPerHiddenLayer: Size by lazy { parameters.iNeuronsPerHiddenLayer }
 
         fun sigmoid(rawOutput: Double) = 1 / (1 + exp(-rawOutput))
 

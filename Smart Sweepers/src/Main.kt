@@ -1,5 +1,6 @@
 @file:Suppress("ConstPropertyName")
 
+import Parameters.Companion.parameters
 import java.awt.*
 import java.awt.event.*
 import java.awt.geom.*
@@ -46,7 +47,7 @@ object Main {
         val frame = JFrame(applicationName).also { it.add(panel) }
         var controller = newController(panel, frame::repaint)
 
-        val timer = Timer(Parameters.iFramesPerSecond.toFloat()).also { it.start() }
+        val timer = Timer(parameters.iFramesPerSecond.toFloat()).also { it.start() }
         var done = false
         with(frame) {
             addKeyListener(object : KeyAdapter() {
@@ -64,7 +65,7 @@ object Main {
             })
 
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-            setSize(Parameters.WindowWidth, Parameters.WindowHeight)
+            setSize(parameters.iWindowWidth, parameters.iWindowHeight)
             isVisible = true
         }
 

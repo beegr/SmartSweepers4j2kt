@@ -2,6 +2,7 @@ import GeneticAlgorithm.Companion.copiesPerElite
 import GeneticAlgorithm.Companion.desiredElites
 import GeneticAlgorithm.Companion.genomeCount
 import GeneticAlgorithm.Companion.idx
+import Parameters.Companion.parameters
 import rand.randomFloat
 
 typealias DrawLine = (x1: Double, y1: Double, x2: Double, y2: Double) -> Unit
@@ -29,26 +30,18 @@ class Controller {
     private val sweepers =
         List(genomeCount) { si -> Minesweeper().also { it.putWeights { pi -> genAlg[si].weight(pi) } } }
 
-    private val xClient: Size = Parameters.WindowWidth
-    private val yClient: Size = Parameters.WindowHeight
+    private val xClient: Size = parameters.iWindowWidth
+    private val yClient: Size = parameters.iWindowHeight
 
-    private val numMines: Int = Parameters.iNumMines
+    private val numMines: Int = parameters.iNumMines
     private val mineLocations = MutableList(numMines) { Point(randomFloat() * xClient, randomFloat() * yClient) }
 
     companion object {
-        private val sweeperScale by lazy {
-            Parameters.iSweeperScale.toDouble()
-                .also { require(it > 0.0) { "sweeper scale: $it, must be positive" } }
-        }
+        private val sweeperScale by lazy { parameters.iSweeperScale.toDouble() }
 
-        private val mineScale by lazy {
-            Parameters.dMineScale
-                .also { require(it > 0.0) { "mine scale: $it, must be positive" } }
-        }
+        private val mineScale by lazy { parameters.dMineScale }
 
-        private val closeEnough by lazy {
-            sweeperScale + mineScale
-        }
+        private val closeEnough by lazy { sweeperScale + mineScale }
 
         private fun createOutlineRenderer(points: List<Point>, lines: List<Pair<Index, Index>>): RenderTransform {
             val pointsUsed = lines.flatMap { (a, b) -> listOf(a, b) }.distinct()
@@ -123,7 +116,7 @@ class Controller {
         Matrix.startWith.translation(pos.x, pos.y)
 
     fun update() {
-        if (ticks++ < Parameters.iNumTicks) {
+        if (ticks++ < parameters.iNumTicks) {
             sweepers.forEachIndexed { i, currentSweeper ->
                 currentSweeper.update(mineLocations)
 

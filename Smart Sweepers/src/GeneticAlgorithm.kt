@@ -1,3 +1,5 @@
+import Parameters.Companion.parameters
+
 typealias Fitness = Int
 typealias Index = Int
 typealias Size = Int
@@ -25,26 +27,12 @@ class GeneticAlgorithm {
 
         // all the parameters below are determined lazily, so that they can be read into
         // Parameters before the GenAlg instance is created.
-        val desiredElites: Size by lazy {
-            Parameters.iNumElite
-                .also { require(it >= 0) { "elites: $it, must not be negative" } }
-        }
-        val copiesPerElite: Size by lazy {
-            Parameters.iNumCopiesElite
-                .also { require(it > 0) { "copies per elite: $it, must be positive (even if elites are zero)" } }
-        }
-        val genomeCount: Size by lazy {
-            Parameters.iNumSweepers
-                .also { require(it > 0) { "population size: $it, must be positive" } }
-                .also {
-                    val fromBefore = desiredElites * copiesPerElite
-                    val newMembers = it - fromBefore
-                    require(newMembers >= 2 && newMembers.isEven()) { "population size after copied elites ($it - $fromBefore = $newMembers) must allow for 1+ sets of twins to fill it out" }
-                }
-        }
-        private val dMaxPerturbation by lazy { Parameters.dMaxPerturbation }
-        private val mutationRate by lazy { Parameters.dMutationRate.also { require(it in 0.0..1.0) { "mutation rate: $it, must be between (inclusive): zero and one" } } }
-        private val crossoverRate by lazy { Parameters.dCrossoverRate.also { require(it in 0.0..1.0) { "crossover rate: $it, must be between (inclusive): zero and one" } } }
+        val desiredElites: Size by lazy { parameters.iNumElite }
+        val copiesPerElite: Size by lazy { parameters.iNumCopiesElite }
+        val genomeCount: Size by lazy { parameters.iNumSweepers }
+        private val dMaxPerturbation by lazy { parameters.dMaxPerturbation }
+        private val mutationRate by lazy { parameters.dMutationRate }
+        private val crossoverRate by lazy { parameters.dCrossoverRate }
 
         private fun Weight.allowForPossibleMutation() =
             if (rand.randomFloat() >= mutationRate) this else this + (rand.randomClamped() * dMaxPerturbation)

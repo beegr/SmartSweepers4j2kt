@@ -1,3 +1,4 @@
+import Parameters.Companion.parameters
 import rand.randomFloat
 
 class Minesweeper {
@@ -19,7 +20,7 @@ class Minesweeper {
         fitness = 0
         rotation = rand.randomRadian()
         lookAt = rotationToPoint(rotation)
-        position = Point(randomFloat() * Parameters.WindowWidth, randomFloat() * Parameters.WindowHeight)
+        position = Point(randomFloat() * parameters.iWindowWidth, randomFloat() * parameters.iWindowHeight)
     }
 
     fun worldTransformMatrix() =
@@ -40,16 +41,16 @@ class Minesweeper {
         val lTrack = output[0]
         val rTrack = output[1]
 
-        rotation += (lTrack - rTrack).boundedBy(-Parameters.dMaxTurnRate, Parameters.dMaxTurnRate)
+        rotation += (lTrack - rTrack).boundedBy(-parameters.dMaxTurnRate, parameters.dMaxTurnRate)
 
-        val speed = (lTrack + rTrack) * Parameters.iSpeedScale
+        val speed = (lTrack + rTrack) * parameters.iSpeedScale
 
         lookAt = rotationToPoint(rotation)
 
         val (xx, yy) = position + lookAt * speed
         position = Point(
-            xx.wrappedTo(0.0, Parameters.WindowWidth.toDouble()),
-            yy.wrappedTo(0.0, Parameters.WindowHeight.toDouble())
+            xx.wrappedTo(0.0, parameters.iWindowWidth.toDouble()),
+            yy.wrappedTo(0.0, parameters.iWindowHeight.toDouble())
         )
     }
 
