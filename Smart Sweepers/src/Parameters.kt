@@ -1,8 +1,6 @@
 import java.io.*
 
 class Parameters private constructor(
-    val iNumInputs: Int,
-    val iNumOutputs: Int,
     val iNumHidden: Int,
     val iNeuronsPerHiddenLayer: Int,
     val iNumElite: Int,
@@ -52,10 +50,6 @@ class Parameters private constructor(
             val copies: Int
             parameters = Parameters(
                 // NeuralNet parameters ---------------------------------------------------------
-                // how many pieces of (orthogonal?) information the net has to 'think on' ...
-                "iNumInputs".checkFor(integer, positive),
-                // ... to produce this many data points to 'act on'.
-                "iNumOutputs".checkFor(integer, positive),
                 // are there any extra (hidden) layers?
                 "iNumHidden".checkFor(integer, nonNegative).also { noHidden = it == 0 },
                 // and if so, how many neurons do each of those have?

@@ -1,12 +1,14 @@
+@file:Suppress("ConstPropertyName")
+
 import Parameters.Companion.parameters
 import kotlin.math.*
 
 class NeuralNet {
     companion object {
+        private const val numInputs: Size = 4
+        private const val numOutputs: Size = 2
         // all the parameters below are determined lazily, so that they can be read into
         // Parameters before any NeuralNet instance is created.
-        private val numInputs: Size by lazy { parameters.iNumInputs }
-        private val numOutputs: Size by lazy { parameters.iNumOutputs }
         private val numHiddenLayers: Size by lazy { parameters.iNumHidden }
         private val numNeuronsPerHiddenLayer: Size by lazy { parameters.iNeuronsPerHiddenLayer }
 
