@@ -37,7 +37,7 @@ class GeneticAlgorithm {
         private fun Weight.allowForPossibleMutation() =
             if (rand.randomFloat() >= mutationRate) this else this + (rand.randomClamped() * dMaxPerturbation)
 
-        private val chromosomeLength: Size by lazy { NeuralNet.numberOfWeights }
+        private val chromosomeLength: Size by lazy { Minesweeper.neuralNetMaker.numberOfWeights }
 
         private fun crossover(at: Index?, count: Size, fxA: ReadWeight, fxB: ReadWeight): Pair<Weights, Weights> {
             // turn the cross-over point into a simple question: is this point before the cross-over?

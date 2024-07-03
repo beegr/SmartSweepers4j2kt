@@ -2,7 +2,9 @@ import Parameters.Companion.parameters
 import rand.randomFloat
 
 class Minesweeper {
-    private val itsBrain = NeuralNet()
+    private val dxWeights = DoubleArray(neuralNetMaker.numberOfWeights) { rand.randomClamped() }
+    private val myCompute = neuralNetMaker.toNetCompute(dxWeights)
+
     private lateinit var position: Point
     private lateinit var lookAt: Point
 
@@ -36,7 +38,7 @@ class Minesweeper {
         closestMine = found
         val towardClosestMine = between.normalize()
 
-        val output = itsBrain.update(listOf(towardClosestMine.x, towardClosestMine.y, lookAt.x, lookAt.y))
+        val output = myCompute(listOf(towardClosestMine.x, towardClosestMine.y, lookAt.x, lookAt.y))
 
         val lTrack = output[0]
         val rTrack = output[1]
@@ -63,23 +65,33 @@ class Minesweeper {
     }
 
     fun putWeights(fx: ReadWeight) =
-        itsBrain.putWeights(fx)
+        dxWeights.indices.forEach { dxWeights[it] = fx(it) }
 
-    private companion object {
+    companion object {
+        val neuralNetMaker by lazy {
+            NeuralNet(
+                4, // towardClosestMine (x,y) and lookAt (x,y)
+                parameters.iNumHidden,
+                parameters.iNeuronsPerHiddenLayer,
+                2 // track-power (left, right)
+                // we'll use the default sigmoid function
+            )
+        }
+
         /** if outside of bounds, returns nearest */
-        fun <T : Comparable<T>> T.boundedBy(lower: T, upper: T) =
+        private fun <T : Comparable<T>> T.boundedBy(lower: T, upper: T) =
             if (this < lower) lower
             else if (this > upper) upper
             else this
 
         /** if outside of bounds, returns furthest */
-        fun <T : Comparable<T>> T.wrappedTo(lower: T, upper: T) =
+        private fun <T : Comparable<T>> T.wrappedTo(lower: T, upper: T) =
             if (this < lower) upper
             else if (this > upper) lower
             else this
 
         /** determines the nearest place in list, returns a vector *to* it, and its list-index */
-        fun Point.vectorToClosestOf(places: List<Point>): Pair<Point, Index> =
+        private fun Point.vectorToClosestOf(places: List<Point>): Pair<Point, Index> =
             places
                 .mapIndexed { i, place ->
                     val vectorBetween = this - place
@@ -90,7 +102,7 @@ class Minesweeper {
                 .let { it.second to it.third }
 
         /** So if you are "close enough for Jazz" are you thus "On the Jazz"? */
-        fun Point.closeEnoughForJazz(place: Point, howClose: Double) =
+        private fun Point.closeEnoughForJazz(place: Point, howClose: Double) =
             (this - place).length() <= howClose
     }
 }
