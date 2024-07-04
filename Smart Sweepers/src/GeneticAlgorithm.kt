@@ -95,7 +95,7 @@ class GeneticAlgorithm {
             fxGenome: ReadGenome,
             sculptor: Sculpt,
             chromosomeLength: Size,
-            runRoulette: () -> Index
+            runRoulette: (Index?) -> Index
         ) = sequence {
             repeat(sculptor.elite) { idxElite ->
                 repeat(sculptor.copies) {
@@ -103,28 +103,15 @@ class GeneticAlgorithm {
                 }
             }
 
-            // So, I'm not really fond of the cross-over determination as historically implemented.
-            // I'm not changing it right now, to keep the expected population fitness growth as
-            // previously seen, but I want to note that as-written, the cross-over rate experienced
-            // is always going to be smaller than the rate specified.
-            //
-            // 1) As the determination of parentB doesn't exclude parentA, when they are the same,
-            //    this *also* means no cross-over.
-            // 2) The cross-over point includes the possibility of index 0 which means the children
-            //    are each still entirely from one parent, effectively the same as no cross-over.
-            //
-            // However, even with no cross-over, mutation may mean the children aren't identical to
-            // the parents, nor to each other.  Roll enough dice and the chances of not seeing a '1'
-            // become increasingly scant.
-
             repeat((genomeCount - sculptor.elite * sculptor.copies) / 2) {
-                val parentA = fxGenome(runRoulette())
-                val parentB = fxGenome(runRoulette())
-                // determine if there should be a cross-over, and at what point
+                // get the genome index of the first parent, it could be any from the roulette
+                val idxParentA = runRoulette(null)
+                val parentA = fxGenome(idxParentA)
+                // however, avoid parentA when picking parentB
+                val parentB = fxGenome(runRoulette(idxParentA))
                 val crossOverPoint =
-                    if (parentA !== parentB && rand.randomFloat() <= crossoverRate)
-                        rand.randomInt(0, chromosomeLength - 1)
-                    else null
+                    if (rand.randomFloat() > crossoverRate) null
+                    else rand.randomInt(1, chromosomeLength - 1)
 
                 val (weightsChildA, weightsChildB) =
                     crossover(crossOverPoint, chromosomeLength, parentA.ws::get, parentB.ws::get)
@@ -176,12 +163,38 @@ class GeneticAlgorithm {
         //     roulette:  1  2  3  4  5  6  7  8  9
         //     genome  : z0 z0 z0 z0 z0 z1 z1 z1 z2
 
-        fun runRoulette(): Index {
+        fun runRoulette(skip: Index?): Index {
+            // EG: z1 was already picked as parentA, so parentB should skip z1, this makes our mental picture:
+            //     roulette:  1  2  3  4  5  -  -  -  9
+            //     genome  : z0 z0 z0 z0 z0 -- -- -- z2
+            //     which is essentially the same as a wheel with fewer slots, some re-numbered
+
+            val skipThisMuch by lazy { population[skip!!].fitness }
+            // EG: z1 has fitness = 3, so the wheel needs to shrink that much
+
+            // We're calculating purely from numbers regarding what we want to skip.  Conceivably we could use
+            // the total for the genome before the skipped one, but then we'd need to make an exception for
+            // avoiding the first genome. (It would be a simple thing on its own, but there's already enough stuff
+            // going on with zero-based indexing and one-based counting; let's keep to just the one thing we
+            // know exists.)
+            val startSkipHere by lazy { weightedWheel[skip!!] - skipThisMuch + 1 }
+            // EG: z1's 'numbers' are 6, 7, 8. wheel[z1] is 8, the last one.  We calculate the first one: 6.
+
+            val adjustWheel: (Size) -> Size =
+                if (skip == null) ::noChange
+                else { end -> end - skipThisMuch }
+
+            val adjustMarble: (Size) -> Size =
+                if (skip == null) ::noChange
+                else { marble -> if (marble < startSkipHere) marble else marble + skipThisMuch }
+
             // There's a double-edged sword when dealing with the wheel-model.  On the one hand, because all
             // the unfit (i.e. fitness = 0) genomes are at the end, the running total fitness of the last
             // genome is the same as the last fit genome (i.e. we don't need to know the lastFitGenome) ...
-            val marbleLandedOn = rand.randomInt(1, weightedWheel.last())
-            // EG: the marble lands on X, within the range 1..9
+            val marbleLandedOn =
+                weightedWheel.last()
+                    .let { end -> rand.randomInt(1, adjustWheel(end)) }
+                    .let { marble -> adjustMarble(marble) }
 
             // ... but the search needs a wheel-model truncated to avoid any repeated numbers, so here we
             // *do* need to know the lastFitGenome
@@ -216,3 +229,6 @@ fun <T, R> Iterable<T>.carriedFold(carry: R, mapping: (R, T) -> R) = iterator {
 inline fun <T, reified R> Array<out T>.carriedFold(carry: R, noinline mapping: (acc: R, T) -> R) =
     if (isEmpty()) emptyArray()
     else asIterable().carriedFold(carry, mapping).iterator().let { seq -> Array(size) { seq.next() } }
+
+@Suppress("NOTHING_TO_INLINE")
+private inline fun <T> noChange(t: T) = t
