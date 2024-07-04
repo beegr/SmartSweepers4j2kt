@@ -1,9 +1,6 @@
 import Parameters.Companion.parameters
-import rand.randomFloat
 
-class Minesweeper {
-    private val dxWeights = DoubleArray(neuralNetMaker.numberOfWeights) { rand.randomClamped() }
-    private val myCompute = neuralNetMaker.toNetCompute(dxWeights)
+class Minesweeper(private val fxPosition: () -> Point, val fxWeights: () -> Weights) {
 
     private lateinit var position: Point
     private lateinit var lookAt: Point
@@ -22,7 +19,7 @@ class Minesweeper {
         fitness = 0
         rotation = rand.randomRadian()
         lookAt = rotationToPoint(rotation)
-        position = Point(randomFloat() * parameters.iWindowWidth, randomFloat() * parameters.iWindowHeight)
+        position = fxPosition()
     }
 
     fun worldTransformMatrix() =
@@ -38,7 +35,10 @@ class Minesweeper {
         closestMine = found
         val towardClosestMine = between.normalize()
 
-        val output = myCompute(listOf(towardClosestMine.x, towardClosestMine.y, lookAt.x, lookAt.y))
+        val output =
+            fxWeights()
+                .let { neuralNetMaker.toNetCompute(it) }
+                .let { it(listOf(towardClosestMine.x, towardClosestMine.y, lookAt.x, lookAt.y)) }
 
         val lTrack = output[0]
         val rTrack = output[1]
@@ -63,9 +63,6 @@ class Minesweeper {
     fun incrementFitness() {
         ++fitness
     }
-
-    fun putWeights(fx: ReadWeight) =
-        dxWeights.indices.forEach { dxWeights[it] = fx(it) }
 
     companion object {
         val neuralNetMaker by lazy {

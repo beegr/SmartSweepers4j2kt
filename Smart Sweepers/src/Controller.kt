@@ -26,15 +26,16 @@ class Controller {
     lateinit var bluePen: ChangePen
     lateinit var repaint: () -> Unit
 
-    private val genAlg = GeneticAlgorithm()
-    private val sweepers =
-        List(genomeCount) { si -> Minesweeper().also { it.putWeights { pi -> genAlg[si].weight(pi) } } }
-
     private val xClient: Size = parameters.iWindowWidth
     private val yClient: Size = parameters.iWindowHeight
 
+    private val randomLocation = { Point(randomFloat() * xClient, randomFloat() * yClient) }
+
+    private val genAlg = GeneticAlgorithm()
+    private val sweepers = List(genomeCount) { si -> Minesweeper(randomLocation) { genAlg[si].ws } }
+
     private val numMines: Int = parameters.iNumMines
-    private val mineLocations = MutableList(numMines) { Point(randomFloat() * xClient, randomFloat() * yClient) }
+    private val mineLocations = MutableList(numMines) { randomLocation() }
 
     companion object {
         private val sweeperScale by lazy { parameters.iSweeperScale.toDouble() }
@@ -124,7 +125,7 @@ class Controller {
 
                 if (grabHit >= 0) {
                     currentSweeper.incrementFitness()
-                    mineLocations[grabHit] = Point(randomFloat() * xClient, randomFloat() * yClient)
+                    mineLocations[grabHit] = randomLocation()
                 }
 
                 thePopulation[i].fitness = currentSweeper.fitness
@@ -141,10 +142,7 @@ class Controller {
                 peakFitness.add(peak)
             }
 
-            sweepers.forEachIndexed { i, sweeper ->
-                sweeper.putWeights { idx: Int -> thePopulation[i].weight(idx) }
-                sweeper.reset()
-            }
+            sweepers.forEach { it.reset() }
             generations++
             repaint()
         }

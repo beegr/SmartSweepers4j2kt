@@ -8,13 +8,7 @@ typealias Weights = DoubleArray
 typealias ReadWeight = (Index) -> Weight
 typealias ReadGenome = (Index) -> Genome
 
-/**
- * Genome stores weights as an array internally, but external access is read-only by index.
- * The only way the weights could be changed during the Genome's lifetime is if the Genome's
- * creator altered the array's contents (that it provided) after the fact.
- */
-class Genome(private val ws: Weights, var fitness: Fitness = 0) : Comparable<Genome> {
-    fun weight(idx: Index) = ws[idx]
+class Genome(val ws: Weights, var fitness: Fitness = 0) : Comparable<Genome> {
     override fun compareTo(other: Genome) = fitness.compareTo(other.fitness)
 }
 
@@ -133,7 +127,7 @@ class GeneticAlgorithm {
                     else null
 
                 val (weightsChildA, weightsChildB) =
-                    crossover(crossOverPoint, chromosomeLength, parentA::weight, parentB::weight)
+                    crossover(crossOverPoint, chromosomeLength, parentA.ws::get, parentB.ws::get)
                 yield(Genome(weightsChildA))
                 yield(Genome(weightsChildB))
             }
