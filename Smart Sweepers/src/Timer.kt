@@ -1,8 +1,4 @@
 class Timer(fps: Float) {
-    init {
-        require(fps > 0.0) { "FPS must be positive" }
-    }
-
     private var pausedAt: Long? = null
     val paused: Boolean
         get() = pausedAt != null

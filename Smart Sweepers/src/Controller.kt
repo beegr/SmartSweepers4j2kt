@@ -2,6 +2,7 @@ import GeneticAlgorithm.Companion.copiesPerElite
 import GeneticAlgorithm.Companion.desiredElites
 import GeneticAlgorithm.Companion.genomeCount
 import GeneticAlgorithm.Companion.idx
+import Parameters.Companion.parameters
 import rand.randomFloat
 
 typealias DrawLine = (x1: Double, y1: Double, x2: Double, y2: Double) -> Unit
@@ -25,30 +26,23 @@ class Controller {
     lateinit var bluePen: ChangePen
     lateinit var repaint: () -> Unit
 
+    private val xClient: Size = parameters.iWindowWidth
+    private val yClient: Size = parameters.iWindowHeight
+
+    private val randomLocation = { Point(randomFloat() * xClient, randomFloat() * yClient) }
+
     private val genAlg = GeneticAlgorithm()
-    private val sweepers =
-        List(genomeCount) { si -> Minesweeper().also { it.putWeights { pi -> genAlg.genome(si).weight(pi) } } }
+    private val sweepers = List(genomeCount) { si -> Minesweeper(randomLocation) { genAlg[si].ws } }
 
-    private val xClient: Size = Parameters.WindowWidth
-    private val yClient: Size = Parameters.WindowHeight
-
-    private val numMines: Int = Parameters.iNumMines
-    private val mineLocations = MutableList(numMines) { Point(randomFloat() * xClient, randomFloat() * yClient) }
+    private val numMines: Int = parameters.iNumMines
+    private val mineLocations = MutableList(numMines) { randomLocation() }
 
     companion object {
-        private val sweeperScale by lazy {
-            Parameters.iSweeperScale.toDouble()
-                .also { require(it > 0.0) { "sweeper scale: $it, must be positive" } }
-        }
+        private val sweeperScale by lazy { parameters.iSweeperScale.toDouble() }
 
-        private val mineScale by lazy {
-            Parameters.dMineScale
-                .also { require(it > 0.0) { "mine scale: $it, must be positive" } }
-        }
+        private val mineScale by lazy { parameters.dMineScale }
 
-        private val closeEnough by lazy {
-            sweeperScale + mineScale
-        }
+        private val closeEnough by lazy { sweeperScale + mineScale }
 
         private fun createOutlineRenderer(points: List<Point>, lines: List<Pair<Index, Index>>): RenderTransform {
             val pointsUsed = lines.flatMap { (a, b) -> listOf(a, b) }.distinct()
@@ -123,7 +117,7 @@ class Controller {
         Matrix.startWith.translation(pos.x, pos.y)
 
     fun update() {
-        if (ticks++ < Parameters.iNumTicks) {
+        if (ticks++ < parameters.iNumTicks) {
             sweepers.forEachIndexed { i, currentSweeper ->
                 currentSweeper.update(mineLocations)
 
@@ -131,7 +125,7 @@ class Controller {
 
                 if (grabHit >= 0) {
                     currentSweeper.incrementFitness()
-                    mineLocations[grabHit] = Point(randomFloat() * xClient, randomFloat() * yClient)
+                    mineLocations[grabHit] = randomLocation()
                 }
 
                 thePopulation[i].fitness = currentSweeper.fitness
@@ -148,10 +142,7 @@ class Controller {
                 peakFitness.add(peak)
             }
 
-            sweepers.forEachIndexed { i, sweeper ->
-                sweeper.putWeights { idx: Int -> thePopulation[i].weight(idx) }
-                sweeper.reset()
-            }
+            sweepers.forEach { it.reset() }
             generations++
             repaint()
         }

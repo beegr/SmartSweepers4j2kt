@@ -1,7 +1,7 @@
-import rand.randomFloat
+import Parameters.Companion.parameters
 
-class Minesweeper {
-    private val itsBrain = NeuralNet()
+class Minesweeper(private val fxPosition: () -> Point, val fxWeights: () -> Weights) {
+
     private lateinit var position: Point
     private lateinit var lookAt: Point
 
@@ -19,7 +19,7 @@ class Minesweeper {
         fitness = 0
         rotation = rand.randomRadian()
         lookAt = rotationToPoint(rotation)
-        position = Point(randomFloat() * Parameters.WindowWidth, randomFloat() * Parameters.WindowHeight)
+        position = fxPosition()
     }
 
     fun worldTransformMatrix() =
@@ -35,21 +35,24 @@ class Minesweeper {
         closestMine = found
         val towardClosestMine = between.normalize()
 
-        val output = itsBrain.update(listOf(towardClosestMine.x, towardClosestMine.y, lookAt.x, lookAt.y))
+        val output =
+            fxWeights()
+                .let { neuralNetMaker.toNetCompute(it) }
+                .let { it(listOf(towardClosestMine.x, towardClosestMine.y, lookAt.x, lookAt.y)) }
 
         val lTrack = output[0]
         val rTrack = output[1]
 
-        rotation += (lTrack - rTrack).boundedBy(-Parameters.dMaxTurnRate, Parameters.dMaxTurnRate)
+        rotation += (lTrack - rTrack).boundedBy(-parameters.dMaxTurnRate, parameters.dMaxTurnRate)
 
-        val speed = (lTrack + rTrack) * Parameters.iSpeedScale
+        val speed = (lTrack + rTrack) * parameters.iSpeedScale
 
         lookAt = rotationToPoint(rotation)
 
         val (xx, yy) = position + lookAt * speed
         position = Point(
-            xx.wrappedTo(0.0, Parameters.WindowWidth.toDouble()),
-            yy.wrappedTo(0.0, Parameters.WindowHeight.toDouble())
+            xx.wrappedTo(0.0, parameters.iWindowWidth.toDouble()),
+            yy.wrappedTo(0.0, parameters.iWindowHeight.toDouble())
         )
     }
 
@@ -61,24 +64,31 @@ class Minesweeper {
         ++fitness
     }
 
-    fun putWeights(fx: ReadWeight) =
-        itsBrain.putWeights(fx)
+    companion object {
+        val neuralNetMaker by lazy {
+            NeuralNet(
+                4, // towardClosestMine (x,y) and lookAt (x,y)
+                parameters.iNumHidden,
+                parameters.iNeuronsPerHiddenLayer,
+                2 // track-power (left, right)
+                // we'll use the default sigmoid function
+            )
+        }
 
-    private companion object {
         /** if outside of bounds, returns nearest */
-        fun <T : Comparable<T>> T.boundedBy(lower: T, upper: T) =
+        private fun <T : Comparable<T>> T.boundedBy(lower: T, upper: T) =
             if (this < lower) lower
             else if (this > upper) upper
             else this
 
         /** if outside of bounds, returns furthest */
-        fun <T : Comparable<T>> T.wrappedTo(lower: T, upper: T) =
+        private fun <T : Comparable<T>> T.wrappedTo(lower: T, upper: T) =
             if (this < lower) upper
             else if (this > upper) lower
             else this
 
         /** determines the nearest place in list, returns a vector *to* it, and its list-index */
-        fun Point.vectorToClosestOf(places: List<Point>): Pair<Point, Index> =
+        private fun Point.vectorToClosestOf(places: List<Point>): Pair<Point, Index> =
             places
                 .mapIndexed { i, place ->
                     val vectorBetween = this - place
@@ -89,7 +99,7 @@ class Minesweeper {
                 .let { it.second to it.third }
 
         /** So if you are "close enough for Jazz" are you thus "On the Jazz"? */
-        fun Point.closeEnoughForJazz(place: Point, howClose: Double) =
+        private fun Point.closeEnoughForJazz(place: Point, howClose: Double) =
             (this - place).length() <= howClose
     }
 }

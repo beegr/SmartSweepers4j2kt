@@ -1,3 +1,5 @@
+import Parameters.Companion.parameters
+
 typealias Fitness = Int
 typealias Index = Int
 typealias Size = Int
@@ -6,13 +8,7 @@ typealias Weights = DoubleArray
 typealias ReadWeight = (Index) -> Weight
 typealias ReadGenome = (Index) -> Genome
 
-/**
- * Genome stores weights as an array internally, but external access is read-only by index.
- * The only way the weights could be changed during the Genome's lifetime is if the Genome's
- * creator altered the array's contents (that it provided) after the fact.
- */
-class Genome(private val ws: Weights, var fitness: Fitness = 0) : Comparable<Genome> {
-    fun weight(idx: Index) = ws[idx]
+class Genome(val ws: Weights, var fitness: Fitness = 0) : Comparable<Genome> {
     override fun compareTo(other: Genome) = fitness.compareTo(other.fitness)
 }
 
@@ -25,31 +21,17 @@ class GeneticAlgorithm {
 
         // all the parameters below are determined lazily, so that they can be read into
         // Parameters before the GenAlg instance is created.
-        val desiredElites: Size by lazy {
-            Parameters.iNumElite
-                .also { require(it >= 0) { "elites: $it, must not be negative" } }
-        }
-        val copiesPerElite: Size by lazy {
-            Parameters.iNumCopiesElite
-                .also { require(it > 0) { "copies per elite: $it, must be positive (even if elites are zero)" } }
-        }
-        val genomeCount: Size by lazy {
-            Parameters.iNumSweepers
-                .also { require(it > 0) { "population size: $it, must be positive" } }
-                .also {
-                    val fromBefore = desiredElites * copiesPerElite
-                    val newMembers = it - fromBefore
-                    require(newMembers >= 2 && newMembers.isEven()) { "population size after copied elites ($it - $fromBefore = $newMembers) must allow for 1+ sets of twins to fill it out" }
-                }
-        }
-        private val dMaxPerturbation by lazy { Parameters.dMaxPerturbation }
-        private val mutationRate by lazy { Parameters.dMutationRate.also { require(it in 0.0..1.0) { "mutation rate: $it, must be between (inclusive): zero and one" } } }
-        private val crossoverRate by lazy { Parameters.dCrossoverRate.also { require(it in 0.0..1.0) { "crossover rate: $it, must be between (inclusive): zero and one" } } }
+        val desiredElites: Size by lazy { parameters.iNumElite }
+        val copiesPerElite: Size by lazy { parameters.iNumCopiesElite }
+        val genomeCount: Size by lazy { parameters.iNumSweepers }
+        private val dMaxPerturbation by lazy { parameters.dMaxPerturbation }
+        private val mutationRate by lazy { parameters.dMutationRate }
+        private val crossoverRate by lazy { parameters.dCrossoverRate }
 
         private fun Weight.allowForPossibleMutation() =
             if (rand.randomFloat() >= mutationRate) this else this + (rand.randomClamped() * dMaxPerturbation)
 
-        private val chromosomeLength: Size by lazy { NeuralNet.numberOfWeights }
+        private val chromosomeLength: Size by lazy { Minesweeper.neuralNetMaker.numberOfWeights }
 
         private fun crossover(at: Index?, count: Size, fxA: ReadWeight, fxB: ReadWeight): Pair<Weights, Weights> {
             // turn the cross-over point into a simple question: is this point before the cross-over?
@@ -145,7 +127,7 @@ class GeneticAlgorithm {
                     else null
 
                 val (weightsChildA, weightsChildB) =
-                    crossover(crossOverPoint, chromosomeLength, parentA::weight, parentB::weight)
+                    crossover(crossOverPoint, chromosomeLength, parentA.ws::get, parentB.ws::get)
                 yield(Genome(weightsChildA))
                 yield(Genome(weightsChildB))
             }
@@ -154,7 +136,7 @@ class GeneticAlgorithm {
 
     private var population = Array(genomeCount) { Genome(Weights(chromosomeLength) { rand.randomClamped() }) }
 
-    fun genome(idx: Index) = population[idx]
+    operator fun get(idx: Index) = population[idx]
 
     val chromes get() = population.toList()
 
@@ -178,7 +160,7 @@ class GeneticAlgorithm {
         bestFitness = population.first().fitness
         // EG: bestFitness = 5
 
-        val sculptor = examinePopulation(::genome)
+        val sculptor = examinePopulation(::get)
         medianFitness = population[sculptor.lastFitGenome / 2].fitness
         // EG: lastFitGenome is z2 (z for zero-based, so the third one is z2)
         //     index of median is z2 ÷ 2 => z1
@@ -217,7 +199,7 @@ class GeneticAlgorithm {
             //     but note, z3 is never returned.
         }
 
-        val newPopulation = nextPopulationBy(::genome, sculptor, chromosomeLength, ::runRoulette).toList()
+        val newPopulation = nextPopulationBy(::get, sculptor, chromosomeLength, ::runRoulette).toList()
         population = newPopulation.toTypedArray()
         return newPopulation
     }
