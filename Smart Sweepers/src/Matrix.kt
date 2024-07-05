@@ -71,7 +71,7 @@ class Matrix private constructor() {
         (this[1, 2] * p.x) + (this[2, 2] * p.y) + (this[3, 2])
     )
 
-    fun transformPoints(points: List<Point>) = points.map { it * this }
+    fun transformPoints(points: Iterable<Point>) = points.map { it * this }
 
     override fun toString() =
         "${this[1, 1]}  ${this[1, 2]}  ${this[1, 3]}\n${this[2, 1]}  ${this[2, 2]}  ${this[2, 3]}\n${this[3, 1]}  ${this[3, 2]}  ${this[3, 3]}\n"

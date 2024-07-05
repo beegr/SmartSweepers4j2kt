@@ -8,6 +8,13 @@ typealias DrawLine = (x1: Double, y1: Double, x2: Double, y2: Double) -> Unit
 typealias DrawText = (s: String, x: Int, y: Int) -> Unit
 typealias ChangePen = () -> Unit
 typealias RenderTransform = (DrawLine, Matrix) -> Unit
+typealias Generation = Int
+typealias PeakPoint = Pair<Generation, Fitness>
+
+val PeakPoint.gen: Generation
+    inline get() = this.first
+val PeakPoint.fit: Fitness
+    inline get() = this.second
 
 class Controller {
     lateinit var line: DrawLine
@@ -39,7 +46,7 @@ class Controller {
                 .also { require(it > 0.0) { "mine scale: $it, must be positive" } }
         }
 
-        val closeEnough by lazy {
+        private val closeEnough by lazy {
             sweeperScale + mineScale
         }
 
@@ -100,7 +107,8 @@ class Controller {
 
     private val medianFitness = mutableListOf<Fitness>()
     private val bestFitness = mutableListOf<Fitness>()
-    private var peak = 0 to 0
+    private var peak: PeakPoint = -1 to 0
+    private val peakFitness: MutableList<PeakPoint> = mutableListOf(-1 to 0)
 
     var fastRender = false
     fun fastRenderToggle() {
@@ -134,8 +142,10 @@ class Controller {
             thePopulation = genAlg.runEpoch()
             medianFitness.add(genAlg.medianFitness)
             bestFitness.add(genAlg.bestFitness)
-            if (genAlg.bestFitness > peak.first) {
-                peak = genAlg.bestFitness to generations
+            if (genAlg.bestFitness > peak.fit) {
+                peakFitness.add(generations to peak.fit)
+                peak = generations to genAlg.bestFitness
+                peakFitness.add(peak)
             }
 
             sweepers.forEachIndexed { i, sweeper ->
@@ -147,17 +157,20 @@ class Controller {
         }
     }
 
-    private fun createLineGraph(): (List<Fitness>) -> Unit {
-        // to fit line-graph within screen
-        val hSlice = xClient / (generations + 1.0)
-        val vSlice = (yClient - 80.0) / (peak.first + 1.0)
+    private fun createLineGraph(): (Iterable<Pair<Generation, Fitness>>) -> Unit {
+        // points in graph are x,y of (generation, fitness)
+        // to fit line-graph within screen ...
+        val hScale = xClient / (generations + 1.0)
+        val vScale = (yClient - 80.0) / (peak.fit + 1.0)
+        val graphWorld = Matrix
+            // ... but remember, the screen's y increases downward ...
+            .startWith.scaling(hScale, -vScale)
+            // ... with the origin at the top
+            .thenTranslate(0.0, yClient.toDouble())
 
-        val origin = 0.0 to yClient.toDouble()
-
-        return { fits ->
-            // runningFold including the initial point (origin) works to our advantage
-            fits
-                .runningFold(origin) { (x, _), fitness -> (x + hSlice) to (yClient - vSlice * fitness) }
+        return { info ->
+            info.map { (g, f) -> g.toDouble() to f.toDouble() }
+                .let { points -> graphWorld.transformPoints(points) }
                 .windowed(2)
                 .forEach { line(it[0].x, it[0].y, it[1].x, it[1].y) }
         }
@@ -185,17 +198,20 @@ class Controller {
                 // to fit line-graph within screen
                 val lineGraph = createLineGraph()
 
+                greenPen()
+                lineGraph(peakFitness.plusElement(generations to peak.fit))
+
                 // best fitness drawn in red (same color as elites)
                 redPen()
-                lineGraph(bestFitness)
+                lineGraph(bestFitness.mapIndexed { idx, f -> idx to f })
 
                 // average fitness in blue
                 bluePen()
-                lineGraph(medianFitness)
+                lineGraph(medianFitness.mapIndexed { idx, f -> idx to f })
 
                 oldPen()
             }
-            text("Peak Fitness: ${peak.first} [Gen: ${peak.second}]", 5, 40)
+            text("Peak Fitness: ${peak.fit} [Gen: ${peak.gen}]", 5, 40)
             text("Best Fitness: ${genAlg.bestFitness}", 5, 60)
             text("Median Fitness: ${genAlg.medianFitness}", 5, 80)
         }
